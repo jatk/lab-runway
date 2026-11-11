@@ -534,6 +534,16 @@ async function initStore() {
 /* ---------- history ---------- */
 let histIndex = [], viewing = null, liveState = null, snapTimer = null;
 let histSpan = (() => { try { const v = localStorage.getItem("labRunway.span"); return v == null ? 24 : v === "all" ? "all" : +v; } catch (e) { return 24; } })();
+// Overview chart zoom: how many months fill the visible width ("fit" = the whole span, no scrolling).
+const ZOOMS = [[12, "1 yr"], [24, "2 yrs"], [60, "5 yrs"], ["fit", "All"]];
+let chartZoom = (() => { try { const v = localStorage.getItem("labRunway.zoom"); return v == null || v === "fit" ? "fit" : +v; } catch (e) { return "fit"; } })();
+let chartCenterMi = null;
+// Width available to the plot. On a re-render the old chart is still in the DOM; on the first one, measure the view column.
+function chartPaneW() {
+  const w = $("#chartwrap"), v = $("#view");
+  const px = w && w.clientWidth ? w.clientWidth : (v && v.clientWidth ? v.clientWidth - 38 : 0);
+  return Math.max(620, Math.round(px || 960));
+}
 let mapGroup = (() => { try { return localStorage.getItem("labRunway.mapGroup") || "category"; } catch (e) { return "category"; } })();
 const TYPES = ["Grant","Fellowship","Contract","Startup","Internal","Gift or endowment","Departmental support"];
 const typeRank = t => t === "No funding source" ? 99 : (TYPES.indexOf(t) < 0 ? 50 : TYPES.indexOf(t));
@@ -723,6 +733,7 @@ function overviewView(P) {
   const behind = toIdx(nowM()) - P.S;
   const roll = !viewing && behind > 0 ? `<div class="banner roll"><span>The projection starts in ${lbl(P.S)}, ${behind} month${behind === 1 ? "" : "s"} ago. Rolling forward to ${lbl(P.S + behind)} adds the projected spending for those months to each grant’s spent total and records the change in History. You can correct the figures afterwards on the Support page.</span><span class="spacer"></span><button class="btn small primary" id="oRoll">Roll forward</button></div>` : "";
   const spans = [[0,"Off"],[12,"1 yr"],[24,"2 yrs"],["all","All"]];
+  const zoomSeg = `<span class="muted" style="font-size:.82rem">Zoom</span><span class="seg">${ZOOMS.map(([v, t]) => `<button data-zoom="${v}" aria-pressed="${String(v) === String(chartZoom)}">${t}</button>`).join("")}</span>`;
   return `${roll}
   <section class="hero">
     <div>
@@ -742,9 +753,9 @@ function overviewView(P) {
   </section>
   <section class="panel">
     <h2>Overview</h2>
-    <div class="row"><p class="hint" style="margin:0">Remaining balance of each grant. Left of the divider is the past — lines worked back from your plan, with dots for balances saved in History; right is the projection. Scroll sideways to move through time. Red bars are costs with no funding source.</p><span class="spacer"></span>
+    <div class="row"><p class="hint" style="margin:0">Remaining balance of each grant. Left of the divider is the past — lines worked back from your plan, with dots for balances saved in History; right is the projection. Zoom sets how much time fills the width; scroll sideways to move through it. Red bars are costs with no funding source.</p><span class="spacer"></span>
       <label class="switch" style="font-size:.82rem" title="Include grants and fellowships marked pending"><input type="checkbox" id="oPending" ${state.settings.includePending ? "checked" : ""}> Include pending</label>
-      <span class="muted" style="font-size:.82rem">Show past</span><span class="seg">${spans.map(([v, t]) => `<button data-span="${v}" aria-pressed="${String(v) === String(histSpan)}">${t}</button>`).join("")}</span></div>
+      ${zoomSeg}<span class="muted" style="font-size:.82rem">Show past</span><span class="seg">${spans.map(([v, t]) => `<button data-span="${v}" aria-pressed="${String(v) === String(histSpan)}">${t}</button>`).join("")}</span></div>
     <div class="legend">${P.gs.filter(G => G.on && !G.unl).map(G => `<span><i style="background:${esc(G.g.color)}"></i>${esc(G.g.name)}</span>`).join("")}</div>
     ${(() => { const svg = chartSVG(P); return `<div class="chartrow"><div class="yaxcol">${P.hist.axis}</div><div class="chartwrap" id="chartwrap">${svg}<div class="tip" id="tip"></div></div></div>`; })()}
   </section>
@@ -776,7 +787,10 @@ function chartSVG(P) {
   const PS = pastSeries(P), PR = pastRun(P);
   const past = Math.max(PS.past, PR.past), H0 = P.S - past, T = past + P.N;
   const ml = 70, mr = 18, TT0 = 26, TH = 84, mt = TT0 + TH + 34, H = mt + 268, UH = 64, gapH = 30;
-  const W = Math.max(960, ml + mr + T * 13);
+  const paneW = chartPaneW(), visM = chartZoom === "fit" ? T : Math.min(T, chartZoom);
+  const ppm = (paneW - ml - mr) / Math.max(1, visM);
+  const W = Math.max(paneW, Math.round(ml + mr + T * ppm));
+  const scrolls = W > paneW + 1;
   const totalH = H + gapH + UH + 22;
   const on = P.gs.filter(G => G.on && !G.unl);
   const pastBal = new Map();
@@ -820,16 +834,21 @@ function chartSVG(P) {
   const top = Math.ceil(ymax / step) * step, bot = Math.floor(ymin / step) * step;
   const pw = W - ml - mr, xj = j => ml + (j + 0.5) * pw / T, xk = k => xj(k + past);
   const y = v => mt + (top - v) / (top - bot || 1) * (H - mt);
-  let s = `<svg viewBox="0 0 ${W} ${totalH}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Grant balances over time" id="chart" style="${W > 960 ? `width:${W}px;max-width:none` : ""}">`;
+  let s = `<svg viewBox="0 0 ${W} ${totalH}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Grant balances over time" id="chart" style="${scrolls ? `width:${W}px;max-width:none` : ""}">`;
   if (past) s += `<rect x="${ml}" y="${TT0}" width="${past * pw / T}" height="${H + gapH + UH - TT0}" fill="var(--sunk)" opacity=".55"/>`;
   for (let v = bot; v <= top + 1e-6; v += step) {
     if (Math.abs(v) > 1e-6) s += `<line x1="${ml}" x2="${W - mr}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/>`;
   }
-  for (let j = 0; j < T; j++) { const mi = H0 + j; if (mi % 12 === 0 || j === 0) {
-    const x = ml + j * pw / T;
-    s += `<line x1="${x}" x2="${x}" y1="${TT0}" y2="${H + gapH + UH}" stroke="var(--line)"/>`;
-    s += `<text x="${x + 4}" y="${totalH - 6}" font-size="11" fill="var(--muted)">${mi % 12 === 0 ? Math.floor(mi / 12) : lbl(mi)}</text>`;
-  } }
+  // Tick density follows the zoom: every month when there is room, otherwise quarters, half-years or just year starts.
+  const colW = pw / T, tickEvery = colW >= 34 ? 1 : colW >= 17 ? 3 : colW >= 9 ? 6 : 12;
+  for (let j = 0; j < T; j++) {
+    const mi = H0 + j, yearStart = mi % 12 === 0;
+    if (!yearStart && j !== 0 && mi % tickEvery !== 0) continue;
+    const x = ml + j * colW;
+    s += `<line x1="${x}" x2="${x}" y1="${TT0}" y2="${H + gapH + UH}" stroke="var(--line)"${yearStart || j === 0 ? "" : ' opacity=".5"'}/>`;
+    const t = j === 0 && !yearStart ? lbl(mi) : yearStart ? Math.floor(mi / 12) : tickEvery === 1 ? MN[((mi % 12) + 12) % 12] : lbl(mi);
+    s += `<text x="${x + 4}" y="${totalH - 6}" font-size="11" fill="var(--muted)"${yearStart ? ' font-weight="600"' : ""}>${t}</text>`;
+  }
   const xd = ml + past * pw / T;
   if (past) {
     s += `<line x1="${xd}" x2="${xd}" y1="${TT0 - 8}" y2="${H + gapH + UH}" stroke="var(--ink)" stroke-dasharray="3 3" opacity=".6"/>`;
@@ -882,7 +901,7 @@ function chartSVG(P) {
   });
   const umax = Math.max(...P.unfunded, ...pastGap, 1), uy0 = H + gapH;
   s += `<line x1="${ml}" x2="${W - mr}" y1="${uy0 + UH}" y2="${uy0 + UH}" stroke="var(--line)"/>`;
-  const bw = Math.max(1, pw / T - 1.5);
+  const bw = Math.max(1, Math.min(colW - 1.5, colW * 0.8)); // keep a visible gap between months at every zoom
   pastGap.forEach((u, j) => { if (u > 0.5) { const h = u / umax * (UH - 4); s += `<rect x="${xj(j) - bw / 2}" y="${uy0 + UH - h}" width="${bw}" height="${h}" fill="var(--bad)" opacity=".5" rx="1"/>`; } });
   P.unfunded.forEach((u, k) => { if (u > 0.5) { const h = u / umax * (UH - 4); s += `<rect x="${xk(k) - bw / 2}" y="${uy0 + UH - h}" width="${bw}" height="${h}" fill="var(--bad)" rx="1"/>`; } });
   s += `<line id="hov" x1="0" x2="0" y1="${TT0}" y2="${uy0 + UH}" stroke="var(--ink)" stroke-width="1" opacity="0"/>`;
@@ -891,7 +910,7 @@ function chartSVG(P) {
   let labels = `<text x="${ml - 8}" y="${ty(tmax) + 4}" text-anchor="end" font-size="11" fill="var(--muted)">${esc(fmtc(tmax))}</text><text x="${ml - 8}" y="${ty(0) + 4}" text-anchor="end" font-size="11" fill="var(--muted)">${esc(fmt(0))}</text>`;
   for (let v = bot; v <= top + 1e-6; v += step) labels += `<text x="${ml - 8}" y="${y(v) + 4}" text-anchor="end" font-size="11" fill="var(--muted)">${esc(fmtc(v))}</text>`;
   labels += `<text x="${ml - 8}" y="${uy0 + 12}" text-anchor="end" font-size="11" fill="var(--bad)">No source</text>`;
-  if (W > 960) P.hist.axis = `<svg viewBox="0 0 ${ml} ${totalH}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="width:${ml}px;height:${totalH}px">${labels}</svg>`;
+  if (scrolls) P.hist.axis = `<svg viewBox="0 0 ${ml} ${totalH}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="width:${ml}px;height:${totalH}px">${labels}</svg>`;
   else { P.hist.axis = ""; s += labels; }
   s += `</svg>`;
   P.hist.xd = xd; P.hist.totalH = totalH;
@@ -937,8 +956,15 @@ function bindChart(P) {
   };
   svg.addEventListener("pointermove", move);
   svg.addEventListener("pointerleave", () => { tip.style.display = "none"; hov.setAttribute("opacity", "0"); });
-  // open with the start of the projection about a quarter of the way in, so the past is a scroll to the left
-  if (W > 960 && Hs.past) wrap.scrollLeft = Math.max(0, Hs.xd * (svg.getBoundingClientRect().width / W || 1) - wrap.clientWidth * 0.25);
+  // Keep the month that was centred before a zoom change; otherwise open with the projection start a quarter of the way in.
+  const scale = svg.getBoundingClientRect().width / W || 1;
+  if (chartCenterMi != null) {
+    const j = Math.max(0, Math.min(T - 1, chartCenterMi - Hs.H0));
+    wrap.scrollLeft = Math.max(0, (ml + (j + 0.5) * pw / T) * scale - wrap.clientWidth / 2);
+    chartCenterMi = null;
+  } else if (W > wrap.clientWidth + 1 && Hs.past) {
+    wrap.scrollLeft = Math.max(0, Hs.xd * scale - wrap.clientWidth * 0.25);
+  }
 }
 
 // Months before the projection start, filled in from the plan, limited by "Show past" and the earliest start date (max 10 years).
@@ -1404,6 +1430,16 @@ function bind(r, P) {
   if (r === "overview" || r === "map" || r === "grants" || r === "costs") {
     const rb = $("#oRoll"); if (rb) confirmBtn(rb, "Click again to roll forward", rollForward);
     const op = $("#oPending"); if (op) op.onchange = () => { state.settings.includePending = op.checked; commit(); };
+    document.querySelectorAll("[data-zoom]").forEach(b => b.onclick = () => {
+      const wrap = $("#chartwrap"), svg = $("#chart");
+      if (wrap && svg && P.hist) { // remember the month in the middle so the view doesn't jump
+        const sc = svg.getBoundingClientRect().width / P.hist.W || 1, pwv = P.hist.W - 88;
+        chartCenterMi = P.hist.H0 + Math.round(((wrap.scrollLeft + wrap.clientWidth / 2) / sc - 70) / pwv * P.hist.T - 0.5);
+      }
+      chartZoom = b.dataset.zoom === "fit" ? "fit" : +b.dataset.zoom;
+      try { localStorage.setItem("labRunway.zoom", String(chartZoom)); } catch (e) {}
+      render();
+    });
     document.querySelectorAll("[data-span]").forEach(b => b.onclick = () => {
       histSpan = b.dataset.span === "all" ? "all" : +b.dataset.span;
       try { localStorage.setItem("labRunway.span", String(histSpan)); } catch (e) {}
@@ -1411,6 +1447,15 @@ function bind(r, P) {
     });
   }
 }
+// The chart is sized in pixels, so a width change needs a redraw.
+let resizeT = null, lastPaneW = 0;
+window.addEventListener("resize", () => {
+  clearTimeout(resizeT);
+  resizeT = setTimeout(() => {
+    const w = chartPaneW();
+    if (route() === "overview" && Math.abs(w - lastPaneW) > 24) { lastPaneW = w; render(); }
+  }, 200);
+});
 function confirmBtn(btn, label, fn) {
   btn.onclick = () => {
     if (btn.dataset.armed) { fn(); return; }
