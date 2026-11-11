@@ -39,6 +39,7 @@ The two don't sync. To move data between them, use **Setup → Export backup** i
 ```
 index.html   the whole app: HTML, CSS and JavaScript in one file
 README.md    this file
+LICENSE      MIT license
 .gitignore   keeps backups and system files out of the repo
 ```
 
@@ -46,3 +47,7 @@ README.md    this file
 
 - The app is deliberately one self-contained file so it can be published as a Claude artifact unchanged.
 - Code that talks to `window.claude` (account storage, downloads) only runs inside the published artifact. When it's missing, the app falls back to `localStorage`, and exports appear as copyable text.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
