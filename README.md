@@ -17,12 +17,9 @@ python3 -m http.server 8000
 
 ## Where data is stored
 
-| Where you run it | Where your lab's data lives |
-|---|---|
-| The published Claude artifact | Your Claude account (synced) |
-| This local copy | The browser's local storage, on this machine only |
+Your lab's data lives in the browser's local storage on the machine where you open the page. There is no server and no account, and nothing is uploaded anywhere.
 
-The two don't sync. To move data between them, use **Setup → Export backup** in one and **Setup → Import backup** in the other. Backups are plain JSON, so they're safe to keep alongside the code. They're excluded from git by default because they contain salary data (see `.gitignore`).
+That also means the data is tied to one browser profile on one machine, and clearing site data will erase it. To move a lab between machines or browsers — or just to keep a safety copy — use **Setup → Export backup**, then **Setup → Import backup** on the other side. Backups are plain JSON. They are excluded from git by default because they contain salary data (see `.gitignore`).
 
 ## Main features
 
@@ -45,8 +42,9 @@ LICENSE      MIT license
 
 ## Notes for development
 
-- The app is deliberately one self-contained file so it can be published as a Claude artifact unchanged.
-- Code that talks to `window.claude` (account storage, downloads) only runs inside the published artifact. When it's missing, the app falls back to `localStorage`, and exports appear as copyable text.
+- The app is deliberately one self-contained file: no build step, no dependencies and no network calls.
+- State is saved to `localStorage` under the `labRunway.*` keys — the lab itself, the version history index, and one entry per saved snapshot.
+- Exports are built in the page and handed to the browser as a blob download.
 
 ## License
 

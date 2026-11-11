@@ -494,21 +494,16 @@ function buildAlerts(P) {
 }
 
 /* ---------- persistence ---------- */
-let dbRef = null, persistMode = "local", saveTimer = null, dirtyBeforeLoad = false, loaded = false;
+let saveTimer = null;
 const LS = "labRunway.v1";
 function setStatus(t) { $("#saveStatus").textContent = t; }
 function save() {
   if (viewing) return;
-  if (!loaded) dirtyBeforeLoad = true;
   clearTimeout(saveTimer);
   setStatus("Saving…");
-  saveTimer = setTimeout(async () => {
-    const json = JSON.stringify(state);
-    try { localStorage.setItem(LS, json); } catch (e) {}
-    if (dbRef) {
-      try { await dbRef.set({json, updated: Date.now()}); setStatus("Saved"); }
-      catch (e) { setStatus("Couldn’t save to your account — kept on this device"); }
-    } else setStatus(persistMode === "local" ? "Saved on this device" : "Saved");
+  saveTimer = setTimeout(() => {
+    try { localStorage.setItem(LS, JSON.stringify(state)); setStatus("Saved on this device"); }
+    catch (e) { setStatus("Couldn’t save — this browser’s storage is full or unavailable"); }
     scheduleSnap();
   }, 600);
 }
@@ -531,31 +526,13 @@ function sanitize(st) {
 async function initStore() {
   try { const raw = localStorage.getItem(LS); if (raw) state = sanitize(JSON.parse(raw)); } catch (e) {}
   setFmt(); render();
-  if (!window.claude || !window.claude.use) { await loadHistory(); loaded = true; setStatus("Saved on this device"); firstSnap(); return; }
-  try {
-    const [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
-    const id = user ? await user.id() : null;
-    if (db && id) {
-      dbRef = db.collection("data/users/" + id).doc("lab");
-      histRef = db.collection("data/users/" + id).doc("history");
-      snapCol = db.collection("data/users/" + id + "/lab/snaps");
-      persistMode = "account";
-      const snap = await dbRef.get();
-      if (snap.exists && !dirtyBeforeLoad) {
-        try { state = sanitize(JSON.parse(snap.data().json)); } catch (e) {}
-        setFmt(); render();
-      } else if (dirtyBeforeLoad) save();
-      setStatus("Saved to your account");
-    } else setStatus("Saved on this device");
-  } catch (e) { setStatus("Saved on this device"); }
   await loadHistory();
-  loaded = true;
+  setStatus("Saved on this device");
   firstSnap();
-  render();
 }
 
 /* ---------- history ---------- */
-let histIndex = [], histRef = null, snapCol = null, viewing = null, liveState = null, snapTimer = null;
+let histIndex = [], viewing = null, liveState = null, snapTimer = null;
 let histSpan = (() => { try { const v = localStorage.getItem("labRunway.span"); return v == null ? 24 : v === "all" ? "all" : +v; } catch (e) { return 24; } })();
 let mapGroup = (() => { try { return localStorage.getItem("labRunway.mapGroup") || "category"; } catch (e) { return "category"; } })();
 const TYPES = ["Grant","Fellowship","Contract","Startup","Internal","Gift or endowment","Departmental support"];
@@ -574,16 +551,13 @@ const summarize = st => { const P = project(st); return Object.fromEntries(P.gs.
 const totalAvail = h => Object.values(h.bal || {}).filter(v => v[3] !== "pending").reduce((a, v) => a + v[2], 0);
 async function loadHistory() {
   try { histIndex = JSON.parse(localStorage.getItem(LSH) || "[]"); } catch (e) { histIndex = []; }
-  if (histRef) { try { const sn = await histRef.get(); if (sn.exists) histIndex = JSON.parse(sn.data().json || "[]"); } catch (e) {} }
   if (!Array.isArray(histIndex)) histIndex = [];
 }
 async function writeHistory() {
   const json = JSON.stringify(histIndex);
   try { localStorage.setItem(LSH, json); } catch (e) {}
-  if (histRef) { try { await histRef.set({json}); } catch (e) {} }
 }
 async function putSnap(sid, json) {
-  if (snapCol) { try { await snapCol.doc(sid).set({json}); return; } catch (e) {} }
   try { localStorage.setItem(LSS + sid, json); } catch (e) {}
 }
 async function getSnap(sid) {
@@ -592,11 +566,9 @@ async function getSnap(sid) {
     const base = h ? await getExampleBase(h.example) : null;
     return base ? JSON.stringify(exampleAt(base, toIdx(h.asOf))) : null;
   }
-  if (snapCol) { try { const sn = await snapCol.doc(sid).get(); if (sn.exists) return sn.data().json; } catch (e) {} }
   try { return localStorage.getItem(LSS + sid); } catch (e) { return null; }
 }
 function dropSnap(sid) {
-  if (snapCol) snapCol.doc(sid).delete().catch(() => {});
   try { localStorage.removeItem(LSS + sid); } catch (e) {}
 }
 function scheduleSnap() { clearTimeout(snapTimer); snapTimer = setTimeout(() => recordSnapshot("auto"), 8000); }
@@ -1467,13 +1439,16 @@ async function bindSetup() {
     } catch (e) { $("#xMsg").textContent = "That file isn’t a Lab Runway backup. Choose a .json file exported from this page."; }
   };
   $("#xJson").hidden = false; $("#xCsv").hidden = false;
-  const doSave = async (filename, data) => {
+  const doSave = (filename, data) => {
     const msg = $("#xMsg"); msg.className = "err"; msg.textContent = "";
-    const dl = await dlReady;
-    if (dl) {
-      try { await dl.save({filename, data}); return; }
-      catch (e) { if (e && e.code === "declined") return; }
-    }
+    try {
+      const url = URL.createObjectURL(new Blob([data], {type: "application/octet-stream"}));
+      const a = document.createElement("a");
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      return;
+    } catch (e) {}
     msg.className = "hint";
     msg.innerHTML = `The download couldn’t start here, so the contents are below. Copy them into a file named <b>${esc(filename)}</b>.<textarea readonly rows="8" style="width:100%;margin-top:8px;font-family:ui-monospace,Menlo,monospace;font-size:.8rem;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px">${esc(data)}</textarea>`;
   };
@@ -2099,8 +2074,6 @@ function editExpense(id) {
   }
 }
 
-// Ask for the downloads capability once, up front, so Export is available on every visit to Setup.
-const dlReady = (window.claude && window.claude.use) ? Promise.resolve(window.claude.use("downloads")).catch(() => null) : Promise.resolve(null);
 initStore();
 </script>
 </body>
