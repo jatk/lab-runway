@@ -59,6 +59,7 @@ main{padding:24px clamp(14px,3vw,32px) 48px;max-width:1280px}
 .btn.primary{background:var(--primary);color:var(--primary-ink);border-color:var(--primary)}
 .btn.danger{color:var(--bad)}
 .btn.small{padding:4px 10px;font-size:.82rem}
+.btn:disabled{opacity:.4;cursor:default;border-color:var(--line)}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .spacer{flex:1}
 
@@ -733,7 +734,8 @@ function overviewView(P) {
   const behind = toIdx(nowM()) - P.S;
   const roll = !viewing && behind > 0 ? `<div class="banner roll"><span>The projection starts in ${lbl(P.S)}, ${behind} month${behind === 1 ? "" : "s"} ago. Rolling forward to ${lbl(P.S + behind)} adds the projected spending for those months to each grant’s spent total and records the change in History. You can correct the figures afterwards on the Support page.</span><span class="spacer"></span><button class="btn small primary" id="oRoll">Roll forward</button></div>` : "";
   const spans = [[0,"Off"],[12,"1 yr"],[24,"2 yrs"],["all","All"]];
-  const zoomSeg = `<span class="muted" style="font-size:.82rem">Zoom</span><span class="seg">${ZOOMS.map(([v, t]) => `<button data-zoom="${v}" aria-pressed="${String(v) === String(chartZoom)}">${t}</button>`).join("")}</span>`;
+  const zoomSeg = `<span class="muted" style="font-size:.82rem">Zoom</span><span class="seg">${ZOOMS.map(([v, t]) => `<button data-ozoom="${v}" aria-pressed="${String(v) === String(chartZoom)}">${t}</button>`).join("")}</span>`
+    + `<button class="btn small" id="oToday" title="Scroll to the current month">Today</button>`;
   return `${roll}
   <section class="hero">
     <div>
@@ -916,6 +918,13 @@ function chartSVG(P) {
   P.hist.xd = xd; P.hist.totalH = totalH;
   return s;
 }
+function scrollChartToNow(P, smooth) {
+  const wrap = $("#chartwrap"), svg = $("#chart"); if (!wrap || !svg || !P.hist) return;
+  const Hs = P.hist, sc = svg.getBoundingClientRect().width / Hs.W || 1, pw = Hs.W - 88;
+  const j = Math.max(0, Math.min(Hs.T - 1, toIdx(nowM()) - Hs.H0));
+  const left = Math.max(0, (70 + (j + 0.5) * pw / Hs.T) * sc - wrap.clientWidth * 0.25);
+  wrap.scrollTo({left, behavior: smooth ? "smooth" : "auto"});
+}
 function bindChart(P) {
   const svg = $("#chart"); if (!svg) return;
   const tip = $("#tip"), hov = $("#hov"), wrap = $("#chartwrap");
@@ -965,6 +974,7 @@ function bindChart(P) {
   } else if (W > wrap.clientWidth + 1 && Hs.past) {
     wrap.scrollLeft = Math.max(0, Hs.xd * scale - wrap.clientWidth * 0.25);
   }
+  const otd = $("#oToday"); if (otd) otd.disabled = W <= wrap.clientWidth + 1;
 }
 
 // Months before the projection start, filled in from the plan, limited by "Show past" and the earliest start date (max 10 years).
@@ -1430,13 +1440,14 @@ function bind(r, P) {
   if (r === "overview" || r === "map" || r === "grants" || r === "costs") {
     const rb = $("#oRoll"); if (rb) confirmBtn(rb, "Click again to roll forward", rollForward);
     const op = $("#oPending"); if (op) op.onchange = () => { state.settings.includePending = op.checked; commit(); };
-    document.querySelectorAll("[data-zoom]").forEach(b => b.onclick = () => {
+    const otd = $("#oToday"); if (otd) otd.onclick = () => scrollChartToNow(P, true);
+    document.querySelectorAll("[data-ozoom]").forEach(b => b.onclick = () => {
       const wrap = $("#chartwrap"), svg = $("#chart");
       if (wrap && svg && P.hist) { // remember the month in the middle so the view doesn't jump
         const sc = svg.getBoundingClientRect().width / P.hist.W || 1, pwv = P.hist.W - 88;
         chartCenterMi = P.hist.H0 + Math.round(((wrap.scrollLeft + wrap.clientWidth / 2) / sc - 70) / pwv * P.hist.T - 0.5);
       }
-      chartZoom = b.dataset.zoom === "fit" ? "fit" : +b.dataset.zoom;
+      chartZoom = b.dataset.ozoom === "fit" ? "fit" : +b.dataset.ozoom;
       try { localStorage.setItem("labRunway.zoom", String(chartZoom)); } catch (e) {}
       render();
     });
