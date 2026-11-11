@@ -1,0 +1,2107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lab Runway</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EDF1EC; --surface:#FBFCFA; --sunk:#E3E9E3; --ink:#17262B; --muted:#5B6B6E; --line:#D0D9D2;
+  --primary:#0E5A57; --primary-ink:#FFFFFF; --warn:#9A620B; --bad:#B0382C; --good:#2E7A3E;
+  --display:"Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --body:"Manrope", "Segoe UI", system-ui, -apple-system, sans-serif;
+  color-scheme: light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1719; --surface:#162123; --sunk:#1D2B2D; --ink:#E4ECEA; --muted:#93A4A6; --line:#2B3B3D;
+    --primary:#5FC2BC; --primary-ink:#06201F; --warn:#E3A84A; --bad:#EE7A6C; --good:#7CCB8C;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1719; --surface:#162123; --sunk:#1D2B2D; --ink:#E4ECEA; --muted:#93A4A6; --line:#2B3B3D;
+  --primary:#5FC2BC; --primary-ink:#06201F; --warn:#E3A84A; --bad:#EE7A6C; --good:#7CCB8C;
+  color-scheme: dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--body);font-variant-numeric:tabular-nums}
+h1,h2,h3{font-family:var(--display);font-weight:700;margin:0;letter-spacing:-.01em}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+a{color:var(--primary)}
+
+.top{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;justify-content:space-between;padding:18px clamp(14px,3vw,32px) 0}
+.brand{display:flex;align-items:baseline;gap:12px;min-width:0}
+.brand h1{font-size:1.35rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand .app{color:var(--muted);font-size:.85rem}
+.top-right{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.status{font-size:.8rem;color:var(--muted)}
+.switch{display:flex;align-items:center;gap:8px;font-size:.88rem;cursor:pointer;user-select:none}
+.switch input{appearance:none;width:34px;height:20px;border-radius:20px;background:var(--line);position:relative;cursor:pointer;margin:0;transition:background .15s}
+.switch input::after{content:"";position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:var(--surface);transition:transform .15s}
+.switch input:checked{background:var(--primary)}
+.switch input:checked::after{transform:translateX(14px)}
+
+nav.tabs{display:flex;gap:4px;padding:14px clamp(14px,3vw,32px) 0;border-bottom:1px solid var(--line);overflow-x:auto}
+nav.tabs a{padding:8px 14px;border-radius:8px 8px 0 0;text-decoration:none;color:var(--muted);font-weight:600;white-space:nowrap;border:1px solid transparent;border-bottom:none;margin-bottom:-1px}
+nav.tabs a[aria-current="page"]{color:var(--ink);background:var(--surface);border-color:var(--line)}
+main{padding:24px clamp(14px,3vw,32px) 48px;max-width:1280px}
+
+.btn{border:1px solid var(--line);background:var(--surface);padding:7px 14px;border-radius:7px;cursor:pointer;font-weight:600;font-size:.9rem}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--primary);color:var(--primary-ink);border-color:var(--primary)}
+.btn.danger{color:var(--bad)}
+.btn.small{padding:4px 10px;font-size:.82rem}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.spacer{flex:1}
+
+.hero{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:28px;align-items:end;margin-bottom:28px}
+.hero .lead{font-size:.95rem;color:var(--muted);margin:0 0 4px}
+.hero .big{font-family:var(--display);font-size:clamp(2.6rem,7vw,4.6rem);line-height:.95;font-weight:700;letter-spacing:-.03em}
+.hero .big.bad{color:var(--bad)}
+.hero .sub{margin:12px 0 0;max-width:52ch}
+.figs{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.fig{background:var(--surface);padding:12px 14px}
+.fig b{display:block;font-size:1.25rem;font-family:var(--display)}
+.fig span{font-size:.8rem;color:var(--muted)}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;margin-bottom:22px}
+.panel h2{font-size:1.1rem;margin-bottom:4px}
+.panel .hint{color:var(--muted);font-size:.86rem;margin:0 0 12px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.84rem;margin:6px 0 4px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.chartrow{display:flex;align-items:flex-start}
+.yaxcol{flex:0 0 auto;width:0;position:relative;z-index:2;pointer-events:none}
+.yaxcol svg{position:absolute;left:0;top:0;background:linear-gradient(to right,var(--surface) 80%,transparent)}
+.chartwrap{position:relative;overflow-x:auto;flex:1;min-width:0}
+.chartwrap svg{display:block;width:100%;min-width:620px;height:auto}
+.tip{position:absolute;pointer-events:none;background:var(--ink);color:var(--bg);font-size:.8rem;padding:8px 10px;border-radius:7px;min-width:180px;display:none;z-index:2}
+.tip div{display:flex;justify-content:space-between;gap:14px}
+.tip .neg{color:#FFB3A8}
+.tip .tsec{display:block;margin-top:7px;padding-top:5px;border-top:1px solid color-mix(in srgb,var(--bg) 25%,transparent);opacity:.7;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em}
+
+.alerts{list-style:none;margin:0;padding:0}
+.alerts li{display:grid;grid-template-columns:10px 1fr;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+.alerts li:first-child{border-top:none}
+.alerts .dot{width:10px;height:10px;border-radius:50%;margin-top:6px}
+.alerts .bad .dot{background:var(--bad)} .alerts .warn .dot{background:var(--warn)} .alerts .info .dot{background:var(--muted)} .alerts .good .dot{background:var(--good)}
+.alerts small{color:var(--muted)}
+
+.tbl-wrap{overflow-x:auto}
+table.data{width:100%;border-collapse:collapse;font-size:.9rem}
+table.data th{text-align:left;font-weight:600;color:var(--muted);font-size:.8rem;padding:6px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+table.data td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+table.data td.num,table.data th.num{text-align:right;white-space:nowrap}
+table.data tr.click{cursor:pointer}
+table.data tr.click:hover td{background:var(--sunk)}
+table.data tfoot td{font-weight:700;border-bottom:none}
+.neg{color:var(--bad)} .warnc{color:var(--warn)} .muted{color:var(--muted)}
+.sw{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:8px;vertical-align:-1px}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:.78rem;border:1px solid var(--line);border-radius:20px;padding:1px 8px 1px 6px;margin:0 4px 3px 0;white-space:nowrap}
+.chip i{width:8px;height:8px;border-radius:50%}
+.tag{font-size:.74rem;border-radius:4px;padding:1px 6px;background:var(--sunk);color:var(--muted);white-space:nowrap}
+.tag.pending{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
+
+/* funding map */
+.map{border-collapse:separate;border-spacing:0;font-size:.78rem}
+.map th,.map td{padding:0}
+.map .lab{position:sticky;left:0;background:var(--surface);z-index:1;min-width:190px;max-width:220px;padding:0 12px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;height:26px;font-size:.85rem}
+.map .lab.grp{color:var(--muted);font-size:.78rem;padding-top:12px;height:34px;vertical-align:bottom}
+.map .yr{font-weight:700;text-align:left;padding:0 0 2px 3px;border-left:1px solid var(--muted);font-size:.78rem}
+.map .mo{color:var(--muted);text-align:center;font-weight:500;font-size:.66rem;width:16px;min-width:16px}
+.map td.c{width:16px;min-width:16px;height:24px;border-right:1px solid var(--surface);border-bottom:2px solid var(--surface)}
+.map td.c.ys{box-shadow:inset 1px 0 0 var(--muted)}
+.map tr.exp{cursor:pointer}
+.map tr.exp:hover .lab{color:var(--primary)}
+.map td.c.over{outline:2px solid var(--warn);outline-offset:-2px}
+.hatch{background:repeating-linear-gradient(135deg,var(--bad) 0 3px,color-mix(in srgb,var(--bad) 35%,transparent) 3px 6px) !important}
+.map td.c.today{box-shadow:inset 2px 0 0 var(--ink)}
+.map td.c.pastc{opacity:.5}
+.map tr[hidden]{display:none}
+.map .lab.grp{z-index:2}
+.map td.grpfill{border-bottom:1px solid var(--line)}
+.caret{border:none;background:none;padding:0;cursor:pointer;color:inherit;font:inherit;display:inline-flex;gap:6px;align-items:center;max-width:100%}
+.caret .car{display:inline-block;font-size:.7rem;transition:transform .15s;color:var(--muted)}
+.caret[aria-expanded="true"] .car{transform:rotate(90deg)}
+.caret .cnt{font-size:.72rem;border:1px solid var(--line);border-radius:10px;padding:0 6px}
+.caret:hover{color:var(--ink)}
+.felcard{border:1px solid var(--line);border-radius:8px;padding:12px;margin:-2px 0 10px;background:var(--sunk)}
+.felrow{background:var(--sunk);border-radius:6px;padding:4px 0 4px 6px}
+.felrow .fname{display:flex;gap:8px;align-items:center;border:none;background:none;padding:0;cursor:pointer;text-align:left;min-width:0}
+.felrow .fname span{display:flex;flex-direction:column;min-width:0}
+.felrow .fname b{font-size:.88rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.felrow .fname small{color:var(--muted);font-size:.76rem}
+.felrow .fd{font-size:.84rem;color:var(--muted)}
+.pctw{display:flex;align-items:center;gap:3px}
+.pctw span{color:var(--muted);font-size:.84rem}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;letter-spacing:.01em}
+.sublabel{font-size:.82rem;font-weight:700;color:var(--muted);margin:14px 0 6px;text-transform:uppercase;letter-spacing:.04em}
+.cs-wrap{position:relative}
+.cs-c i.sel{outline:2px solid var(--primary);outline-offset:1px;position:relative;z-index:1}
+.fixp{border:1px solid var(--line);background:var(--sunk);border-radius:8px;padding:10px 12px;margin:10px 0 6px}
+.fxrow{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) 86px;gap:12px;align-items:center;padding:5px 0;border-top:1px solid var(--line)}
+.fxrow:first-of-type{border-top:none}
+.fxname{display:flex;flex-direction:column;font-size:.88rem;min-width:0}
+.fxname > span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fxname small{font-size:.74rem}
+.fxrow input[type=range]{width:100%;accent-color:var(--primary)}
+.fxrow input[type=number]{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:5px 7px;color:var(--ink);width:62px;font-size:.88rem}
+@media (max-width:820px){.fxrow{grid-template-columns:1fr 86px}.fxrow input[type=range]{grid-column:1/-1;order:3}}
+.covstrip{overflow-x:auto;margin:6px 0 2px;padding-bottom:6px}
+.cs-y,.cs-m,.cs-c{display:flex;gap:2px;min-width:min-content}
+.covstrip[data-z="fit"] .cs-y span,.covstrip[data-z="fit"] .cs-c i{flex:1 0 8px}
+.covstrip[data-z="px"] .cs-y span,.covstrip[data-z="px"] .cs-m span,.covstrip[data-z="px"] .cs-c i{flex:0 0 var(--cw)}
+.cs-y span{font-size:.74rem;font-weight:600;color:var(--muted);white-space:nowrap;height:17px;overflow:visible;width:0}
+.cs-m span{font-size:.64rem;color:var(--muted);text-align:center;height:15px;overflow:hidden}
+.cs-c i{height:48px;border-radius:3px;display:block;cursor:pointer}
+.cs-c i.ys{box-shadow:inset 2px 0 0 var(--muted)}
+.cs-c i.now{box-shadow:inset 3px 0 0 var(--ink)}
+.cs-c i.over{outline:2px solid var(--warn);outline-offset:-2px}
+.cs-c i.hl{outline:2px solid var(--ink);outline-offset:1px;position:relative;z-index:1}
+.cs-tip{position:absolute;z-index:5;display:none;pointer-events:none;background:var(--ink);color:var(--bg);font-size:.8rem;padding:8px 10px;border-radius:7px;min-width:230px;max-width:340px;box-shadow:0 6px 18px rgba(0,0,0,.22)}
+.cs-tip .h{display:flex;justify-content:space-between;gap:12px;margin-bottom:5px}
+.cs-tip .r{display:grid;grid-template-columns:10px minmax(0,1fr) auto 34px;gap:7px;align-items:center;padding:1px 0}
+.cs-tip .r span:nth-child(2){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cs-tip .pc{opacity:.7;text-align:right}
+.cs-tip i{width:10px;height:10px;border-radius:2px}
+.cs-tip .gap{color:#FFB3A8}
+.seg button:disabled{opacity:.4;cursor:default}
+.tag.st-cur{background:color-mix(in srgb,var(--good) 16%,transparent);color:var(--good)}
+.tag.st-up{background:color-mix(in srgb,var(--primary) 14%,transparent);color:var(--primary)}
+.cov{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:6px;margin-top:6px;font-size:.86rem}
+.cov small{display:block;color:var(--muted)}
+.cov.ok{background:color-mix(in srgb,var(--good) 12%,transparent);color:var(--good)}
+.cov.gap{background:color-mix(in srgb,var(--bad) 10%,transparent)}
+.cov.gap b{color:var(--bad)}
+.cov.over{background:color-mix(in srgb,var(--warn) 14%,transparent)}
+.comp{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;margin-top:16px}
+.comp h3{font-size:1rem}
+.pie{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.donut{width:170px;height:170px;flex:none}
+.pleg{flex:1;min-width:190px;font-size:.85rem}
+.pleg div{display:grid;grid-template-columns:12px minmax(0,1fr) auto 56px;gap:8px;align-items:center;padding:3px 0}
+.pleg i{width:12px;height:12px;border-radius:3px}
+.pleg span:nth-child(2){overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pleg .muted{text-align:right}
+.yearbars{display:flex;gap:8px;align-items:flex-end;margin-top:16px;overflow-x:auto;padding:4px 2px}
+.yb{border:none;background:none;cursor:pointer;padding:0;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:.74rem;color:var(--muted)}
+.yb .bar{width:28px;height:64px;display:flex;flex-direction:column;border-radius:4px;overflow:hidden;background:var(--sunk)}
+.yb .bar i{display:block;min-height:1px}
+.yb[aria-pressed="true"]{color:var(--ink);font-weight:700}
+.yb[aria-pressed="true"] .bar{outline:2px solid var(--ink);outline-offset:2px}
+@media (max-width:820px){.comp{grid-template-columns:1fr}}
+#fywrap .pastcol{opacity:.55}
+#fywrap .nowcol{box-shadow:inset 2px 0 0 var(--primary)}
+#fywrap td:first-child,#fywrap th:first-child{position:sticky;left:0;background:var(--surface);z-index:1}
+.map td.c.proj,.map th.projstart{box-shadow:inset 2px 0 0 var(--primary)}
+
+/* forms */
+dialog{border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);padding:0;width:min(640px,94vw);max-height:90vh}
+dialog.wide{width:min(1040px,96vw)}
+dialog::backdrop{background:rgba(10,20,22,.45)}
+.dlg-h{padding:18px 20px 6px}
+.dlg-b{padding:8px 20px 4px;overflow:auto;max-height:calc(90vh - 140px)}
+.dlg-f{padding:14px 20px 18px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;border-top:1px solid var(--line)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px 14px}
+.full{grid-column:1/-1}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:.82rem;font-weight:600;color:var(--muted)}
+label.f input,label.f select,label.f textarea,.alloc input,.alloc select{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:7px 9px;color:var(--ink);font-weight:500;font-size:.92rem;min-width:0;width:100%}
+label.f input[type=color]{padding:2px;height:36px}
+.alloc{display:grid;grid-template-columns:minmax(0,2fr) 76px minmax(0,1.2fr) minmax(0,1.2fr) 30px;gap:6px;align-items:center;margin-bottom:6px}
+.alloc.h{font-size:.74rem;color:var(--muted);font-weight:600}
+.x{border:none;background:none;cursor:pointer;color:var(--muted);font-size:1.1rem;line-height:1}
+.allocsum{font-size:.84rem;margin:4px 0 0}
+.err{color:var(--bad);font-size:.85rem;min-height:1.2em}
+
+.banner{margin:16px clamp(14px,3vw,32px) 0;padding:12px 16px;border-radius:10px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;background:color-mix(in srgb,var(--warn) 16%,var(--surface));border:1px solid color-mix(in srgb,var(--warn) 45%,transparent)}
+.banner.roll{background:var(--surface);border-color:var(--line);margin:0 0 20px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.seg button{border:none;background:var(--surface);padding:4px 10px;font-size:.82rem;cursor:pointer;color:var(--muted);font-weight:600}
+.seg button[aria-pressed="true"]{background:var(--primary);color:var(--primary-ink)}
+.viewing #gAdd,.viewing #cAdd,.viewing #mAddCost,.viewing #mAddGrant{display:none}
+input.txt{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:7px 9px;color:var(--ink);font-size:.92rem}
+input[type=range]{accent-color:var(--primary)}
+.peek-h{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:baseline;margin:12px 0 6px}
+.peek-h b{font-family:var(--display);font-size:1.15rem}
+.empty{text-align:left;padding:48px 0;max-width:560px}
+.empty h2{font-size:clamp(1.8rem,4vw,2.6rem);margin-bottom:10px;line-height:1.05}
+.empty p{color:var(--muted)}
+
+@media (max-width:820px){
+  .hero{grid-template-columns:1fr}
+  .grid2{grid-template-columns:1fr}
+  .alloc{grid-template-columns:1fr 70px 30px}
+  .alloc .am{grid-column:1/3}
+  .alloc.h{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none !important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand"><h1 id="labName">Lab</h1><span class="app">Lab Runway</span></div>
+  <div class="top-right">
+    <label class="switch" title="Include grants marked pending in the projection"><input type="checkbox" id="pendingToggle"> Count pending grants</label>
+    <span class="status" id="saveStatus">Loading…</span>
+  </div>
+</header>
+<nav class="tabs" id="tabs">
+  <a href="#overview">Overview</a>
+  <a href="#map">Funding map</a>
+  <a href="#grants">Support</a>
+  <a href="#costs">Costs</a>
+  <a href="#history">History</a>
+  <a href="#setup">Setup</a>
+</nav>
+<div id="banner"></div>
+<main id="view"></main>
+<dialog id="dlg"></dialog>
+
+<script>
+"use strict";
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid = () => Math.random().toString(36).slice(2, 10);
+const MN = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const toIdx = m => { const [y, mo] = m.split("-").map(Number); return y * 12 + mo - 1; };
+const toM = i => `${Math.floor(i / 12)}-${String(i % 12 + 1).padStart(2, "0")}`;
+const lbl = i => MN[((i % 12) + 12) % 12] + " " + Math.floor(i / 12);
+const validM = m => /^\d{4}-(0[1-9]|1[0-2])$/.test(m || "");
+const nowM = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`; };
+const num = v => { const n = parseFloat(v); return isFinite(n) ? n : 0; };
+const PALETTE = ["#0F7A73","#3D5BA9","#C0661C","#8A4FB0","#2E8B3E","#B23A63","#7A861E","#C9920F","#2C7FB8","#8C5A3C"];
+
+let NF, NFc;
+function setFmt() {
+  const c = state.settings.currency || "USD";
+  try {
+    NF = new Intl.NumberFormat(undefined, {style:"currency", currency:c, maximumFractionDigits:0});
+    NFc = new Intl.NumberFormat(undefined, {style:"currency", currency:c, notation:"compact", maximumFractionDigits:1});
+  } catch (e) {
+    NF = new Intl.NumberFormat(undefined, {maximumFractionDigits:0}); NFc = NF;
+  }
+}
+const fmt = n => NF.format(Math.round(n));
+const fmtc = n => NFc.format(n);
+
+/* ---------- state ---------- */
+function blank() {
+  return {v:1, settings:{labName:"My lab", currency:"USD", start:nowM(), years:5, includePending:true, fyStart:1, defaultIdc:0, defaultIdcBase:"mtdc"}, grants:[], expenses:[]};
+}
+const EX_T0 = "2024-01";
+function exampleTimeline() {
+  const s = toIdx(nowM()), t0 = toIdx(EX_T0), m = toM, r = k => s + k;
+  const st = blank();
+  st.settings.labName = "Example lab"; st.settings.defaultIdc = 55; st.exampleId = "x" + uid();
+  const g = (name, funder, type, status, prob, a, b, amount, color, idcRate, idcBase, awardBasis) =>
+    ({id:uid(), name, funder, type, status, prob, start:m(a), end:m(b), amount, spent:0, color, notes:"", idcRate, idcBase, awardBasis});
+  const startup = g("Startup package","Institution","Startup","active",100,t0,r(18),800000,PALETTE[0],0,"none","direct");
+  const seed = g("Seed grant","Institutional seed fund","Internal","active",100,t0+2,t0+19,120000,PALETTE[5],0,"none","direct");
+  const major = g("Major research grant","National funding agency","Grant","active",100,r(-20),r(40),1100000,PALETTE[1],55,"mtdc","direct");
+  const pilot = g("Pilot award","Private foundation","Grant","active",100,r(-10),r(9),75000,PALETTE[2],10,"tdc","total");
+  const collab = g("Collaborative grant (submitted)","National funding agency","Grant","pending",40,r(8),r(44),450000,PALETTE[3],55,"mtdc","direct");
+  const dept = g("Department TA support","Department","Departmental support","active",100,t0,t0,0,PALETTE[6],0,"none","direct");
+  dept.end = ""; dept.untracked = true;
+  const gfel = g("Graduate fellowship — J. Chen","Private foundation","Fellowship","active",100,r(-2),r(22),0,PALETTE[8],0,"none","direct");
+  Object.assign(gfel, {untracked:true, fellowMode:"monthly", fellowMonthly:2500});
+  const pfel = g("Postdoc fellowship — A. Rivera","National funding agency","Fellowship","active",100,r(3),r(27),0,PALETTE[9],0,"none","direct");
+  Object.assign(pfel, {untracked:true, fellowMode:"percent", fellowPct:50});
+  st.grants = [startup, seed, major, pilot, collab, dept, gfel, pfel];
+  const e = (name, category, kind, amount, a, b, fringe, raise, alloc) =>
+    ({id:uid(), name, category, kind, amount, start:m(a), end:kind === "once" ? m(a) : m(b), fringe, raise, alloc, notes:""});
+  const al = (grantId, pct, a, b) => ({grantId, pct, start:a == null ? "" : m(a), end:b == null ? "" : m(b)});
+  st.expenses = [
+    e("Postdoc — M. Okafor","Personnel","monthly",4800,t0+1,t0+20,30,3,[al(startup.id,100)]),
+    e("Lab technician","Personnel","monthly",4200,t0+1,r(36),32,3,[al(startup.id,100,null,r(-21)), al(startup.id,60,r(-20),null), al(major.id,40,r(-20),null)]),
+    e("PhD student — J. Chen","Personnel","monthly",3200,t0+8,r(48),10,3,[al(gfel.id,0), al(startup.id,50,null,r(18)), al(dept.id,50), al(major.id,50,r(19),null)]),
+    e("Postdoc — A. Rivera","Personnel","monthly",5000,r(-18),r(30),30,3,[al(pfel.id,0), al(major.id,100)]),
+    e("New PhD student (planned)","Personnel","monthly",3200,r(9),r(57),10,3,[al(collab.id,50), al(dept.id,50)]),
+    e("Consumables & reagents","Supplies","monthly",3500,t0,r(60),0,3,[al(startup.id,100,null,t0+1), al(seed.id,100,t0+2,t0+19), al(startup.id,100,t0+20,r(-11)), al(pilot.id,50,r(-10),null), al(major.id,50,r(-10),null)]),
+    e("Conference travel","Travel","monthly",600,t0,r(60),0,0,[al(startup.id,100)]),
+    e("Plate reader","Equipment","once",32000,t0+3,t0+3,0,0,[al(startup.id,100)]),
+    e("Sequencing run","Services","once",18000,r(4),r(4),0,0,[al(pilot.id,100)]),
+    e("Anaerobic chamber","Equipment","once",45000,r(10),r(10),0,0,[al(collab.id,100)])
+  ];
+  const byName = n => st.expenses.find(x => x.name.startsWith(n));
+  Object.assign(gfel, {personId: byName("PhD student").id, fellowTitle: "Graduate fellowship"});
+  Object.assign(pfel, {personId: byName("Postdoc — A.").id, fellowTitle: "Postdoc fellowship"});
+  [["Postdoc — M.","Postdoc"],["Lab technician","Research Staff"],["PhD student","Graduate Student"],["Postdoc — A.","Postdoc"],["New PhD student","Graduate Student"]].forEach(([n, r]) => { const x = byName(n); if (x) x.role = r; });
+  return st;
+}
+// The example lab as it stood at the start of month mi: spending since 2024 (with some month-to-month variation) recorded as spent.
+function exampleAt(base, mi) {
+  const t0 = toIdx(EX_T0), st = JSON.parse(JSON.stringify(base)), n = Math.max(0, mi - t0);
+  if (n > 0) {
+    const run = JSON.parse(JSON.stringify(base));
+    run.settings.start = EX_T0; run.settings.years = Math.ceil(n / 12) + 1; run.settings.includePending = false; run._noAuto = true;
+    const P = project(run);
+    P.gs.forEach((G, gi) => {
+      let tot = 0;
+      for (let k = 0; k < n && k < P.N; k++) tot += G.spend[k] * (1 + 0.12 * Math.sin(k * 1.7 + gi * 2.3));
+      st.grants[gi].spent = Math.round(tot);
+    });
+  }
+  st.settings.start = toM(mi);
+  const s = toIdx(nowM());
+  if (mi < s) st.grants = st.grants.filter(g => g.status === "pending" ? mi >= s - 2 : mi >= toIdx(g.start) - 2);
+  return st;
+}
+let state = blank();
+const EXEMPT_CATS = ["Equipment","Tuition","Subaward"];
+const isExempt = ex => ex.idcExempt == null ? EXEMPT_CATS.includes(ex.category) : !!ex.idcExempt;
+const BASE_LBL = {mtdc:"MTDC", tdc:"TDC", none:"none"};
+const fellowFixed = g => !!g && g.type === "Fellowship";
+const fellowPctOf = (g, a) => g.fellowMode === "award" && g.fellowPct == null ? num(a && a.pct) : num(g.fellowPct ?? 100);
+const fellowDesc = g => !fellowFixed(g) ? "" : (g.fellowMode === "monthly" ? fmt(num(g.fellowMonthly)) + "/mo" + (g.coversFringe === false ? " · salary only" : "") : fellowPctOf(g) + "% of salary" + (g.coversFringe === false ? " only" : " & fringe")) + (g.fellowMode === "award" ? " · award" : "");
+const personOf = costName => { const parts = String(costName || "").split(/\s[—–-]\s/); return (parts[parts.length - 1] || "").trim() || "Unnamed"; };
+const felName = (title, costName) => `${(title || "Fellowship").trim()} — ${personOf(costName)}`;
+const allocAmt = (a, g) => fellowFixed(g) ? fellowDesc(g) : num(a.pct) + "%";
+const gById = id => state.grants.find(g => g.id === id);
+const gColor = id => (gById(id) || {}).color || "#888";
+
+/* ---------- projection engine ---------- */
+function project(st) {
+  const S = toIdx(validM(st.settings.start) ? st.settings.start : nowM());
+  const N = Math.max(12, Math.min(180, Math.round(num(st.settings.years) * 12) || 60));
+  const gs = st.grants.map(g => {
+    const s = validM(g.start) ? toIdx(g.start) : S, e = validM(g.end) ? toIdx(g.end) : S + N;
+    return {g, s, e, on: g.status === "active" || (g.status === "pending" && st.settings.includePending),
+      avail: num(g.amount) - num(g.spent), spentEff: num(g.spent), auto: false, spend: new Array(N).fill(0), bal: new Array(N).fill(0),
+      dir: new Array(N).fill(0), idc: new Array(N).fill(0), rate: g.untracked ? 0 : num(g.idcRate) / 100, base: g.untracked ? "none" : (g.idcBase || "none"), incl: !g.untracked && g.awardBasis === "total", unl: !!g.untracked};
+  });
+  const gm = Object.fromEntries(gs.map(x => [x.g.id, x]));
+  // A grant whose "spent before the projection starts" is left blank takes its spending to date from the plan.
+  if (!st._noAuto) {
+    const need = gs.filter(G => !(num(G.g.spent) > 0) && G.s < S);
+    if (need.length) {
+      const first = Math.max(S - 179, Math.min(...need.map(G => G.s)));
+      const run = JSON.parse(JSON.stringify(st)); run._noAuto = true;
+      run.settings.start = toM(first); run.settings.years = Math.max(1, Math.ceil((S - first) / 12));
+      const PP = project(run);
+      need.forEach(G => {
+        const PG = PP.gm[G.g.id]; if (!PG) return;
+        let sp = 0; for (let k = 0; k < S - first && k < PP.N; k++) sp += PG.spend[k];
+        G.spentEff = sp; G.auto = true; G.avail = num(G.g.amount) - sp;
+      });
+    }
+  }
+  const unfunded = new Array(N).fill(0), total = new Array(N).fill(0), idcAll = new Array(N).fill(0);
+  const rows = st.expenses.map(ex => {
+    const es = validM(ex.start) ? toIdx(ex.start) : S;
+    const ee = ex.kind === "once" ? es : (validM(ex.end) ? toIdx(ex.end) : S + N);
+    const cells = new Array(N).fill(null);
+    let gap = 0, gapFirst = null, gapLast = null, over = false, horizonCost = 0, idcTot = 0;
+    const exempt = isExempt(ex);
+    for (let k = 0; k < N; k++) {
+      const mi = S + k;
+      if (mi < es || mi > ee) continue;
+      const yrs = Math.floor((mi - es) / 12);
+      const cost = num(ex.amount) * Math.pow(1 + num(ex.raise) / 100, yrs) * (1 + num(ex.fringe) / 100);
+      let left = cost, cellIdc = 0; const parts = [];
+      const activeA = (ex.alloc || []).filter(a => {
+        const as = validM(a.start) ? toIdx(a.start) : -Infinity, ae = validM(a.end) ? toIdx(a.end) : Infinity;
+        return mi >= as && mi <= ae;
+      });
+      const charge = (a, amt) => {
+        const G = gm[a.grantId];
+        if (amt <= 0 || !(G && G.on && mi >= G.s && mi <= G.e)) return 0;
+        const idc = G.base === "none" || (G.base === "mtdc" && exempt) ? 0 : amt * G.rate;
+        G.dir[k] += amt; G.idc[k] += idc; G.spend[k] += amt + (G.incl ? idc : 0);
+        parts.push({gid:a.grantId, amt, idc}); left -= amt; cellIdc += idc;
+        return amt;
+      };
+      // Fellowships paying a percentage or a fixed monthly amount come off first; other sources split what's left.
+      let covered = 0, salLeft = cost / (1 + num(ex.fringe) / 100);
+      for (const a of activeA) {
+        const g = gm[a.grantId] && gm[a.grantId].g;
+        if (!fellowFixed(g)) continue;
+        // A fellowship that doesn't cover fringe can only pay toward the salary part of the cost.
+        const totLeft = cost - covered, base = g.coversFringe === false ? salLeft : totLeft;
+        const want = g.fellowMode === "monthly" ? num(g.fellowMonthly) : base * fellowPctOf(g, a) / 100;
+        const paid = charge(a, Math.min(want, base));
+        salLeft -= g.coversFringe === false ? paid : (totLeft > 0 ? paid * salLeft / totLeft : 0);
+        covered += paid;
+      }
+      const rest = cost - covered;
+      for (const a of activeA) { if (!fellowFixed(gm[a.grantId] && gm[a.grantId].g)) charge(a, rest * num(a.pct) / 100); }
+      const isOver = left < -0.5;
+      if (left > 0.5) { unfunded[k] += left; parts.push({gid:null, amt:left}); gap += left; if (gapFirst === null) gapFirst = mi; gapLast = mi; }
+      if (isOver) over = true;
+      total[k] += cost; horizonCost += cost; idcAll[k] += cellIdc; idcTot += cellIdc;
+      cells[k] = {cost, parts, over:isOver, idc:cellIdc};
+    }
+    return {ex, cells, gap, gapFirst, gapLast, over, horizonCost, idcTot};
+  });
+  const deptAll = new Array(N).fill(0), fellowAll = new Array(N).fill(0);
+  for (const G of gs) {
+    if (G.unl) { G.avail = 0; const tgt = G.g.type === "Fellowship" ? fellowAll : deptAll; if (G.on) G.dir.forEach((v, k) => tgt[k] += v); continue; }
+    let b = G.avail; for (let k = 0; k < N; k++) { b -= G.spend[k]; G.bal[k] = b; }
+  }
+  // funded-through: first month with a gap or an overdrawn active grant
+  let breakK = null;
+  for (let k = 0; k < N && breakK === null; k++) {
+    if (unfunded[k] > 0.5) breakK = k;
+    else if (gs.some(G => G.on && G.bal[k] < -0.5 && S + k >= G.s)) breakK = k;
+  }
+  return {S, N, gs, gm, rows, unfunded, total, idcAll, deptAll, fellowAll, breakK};
+}
+
+function buildAlerts(P) {
+  const out = [];
+  // Flag grants whose "spent so far" doesn't match what the plan charged to them before the projection start.
+  const PA = pastRun(P, "all");
+  if (PA.PP) P.gs.forEach(G => {
+    if (!G.on || G.unl || G.s >= P.S) return;
+    const PG = PA.PP.gm[G.g.id]; if (!PG) return;
+    let planned = 0;
+    for (let mi = G.s; mi < Math.min(P.S, G.e + 1); mi++) { const k = mi - (P.S - PA.past); if (k >= 0 && k < PG.spend.length) planned += PG.spend[k]; }
+    if (G.auto) return;
+    const entered = num(G.g.spent);
+    if (Math.abs(planned - entered) > Math.max(1000, 0.05 * num(G.g.amount)))
+      out.push({lvl:"warn", t:`<b>${esc(G.g.name)}</b>: “spent so far” is ${fmt(entered)}, but the plan charges ${fmt(planned)} to it before ${lbl(P.S)}`,
+        s:`Update the spent amount on the Support page from your latest statement so the balances line up. The chart’s past line follows the plan; today’s balance follows the spent amount.`});
+  });
+  for (const G of P.gs) {
+    if (!G.on || G.unl) continue;
+    const name = esc(G.g.name);
+    const kNeg = G.bal.findIndex(b => b < -0.5);
+    if (kNeg >= 0) {
+      const lastK = Math.min(P.N - 1, G.e - P.S);
+      const short = -Math.min(...G.bal.slice(0, Math.max(kNeg + 1, lastK + 1)));
+      out.push({lvl:"bad", t: G.avail < -0.5 ? `<b>${name}</b> is already overdrawn by ${fmt(-G.avail)}${G.auto ? ", going by the costs charged to it so far" : ""}` : `<b>${name}</b> runs out in ${lbl(P.S + kNeg)}`,
+        s:`Charges assigned to it exceed what’s left by ${fmt(short)}${G.e < P.S + P.N ? " before it ends in " + lbl(G.e) : " within the projection"}.`});
+    } else if (G.e >= P.S && G.e < P.S + P.N) {
+      const end = G.bal[G.e - P.S];
+      if (end > Math.max(1000, 0.02 * num(G.g.amount))) out.push({lvl:"warn", t:`<b>${name}</b> ends in ${lbl(G.e)} with ${fmt(end)} unspent`, s:"Assign more costs to it before it ends, or check whether a no-cost extension or carryover is possible."});
+    }
+    if (G.g.status === "pending") out.push({lvl:"info", t:`<b>${name}</b> is pending (${num(G.g.prob)}% likely) and counted as funding`, s:"Turn off “Count pending grants” to see the projection without it."});
+  }
+  for (const r of P.rows) {
+    if (r.gap > 0.5) out.push({lvl:"bad", t:`<b>${esc(r.ex.name)}</b> has no funding source for ${fmt(r.gap)}`,
+      s: r.gapFirst === r.gapLast ? `In ${lbl(r.gapFirst)}.` : `Between ${lbl(r.gapFirst)} and ${lbl(r.gapLast)}.`});
+    if (r.over) out.push({lvl:"warn", t:`<b>${esc(r.ex.name)}</b> is assigned more than 100% in some months`, s:"Grants are being charged more than the cost. Check its funding split."});
+  }
+  const order = {bad:0, warn:1, info:2};
+  return out.sort((a, b) => order[a.lvl] - order[b.lvl]);
+}
+
+/* ---------- persistence ---------- */
+let dbRef = null, persistMode = "local", saveTimer = null, dirtyBeforeLoad = false, loaded = false;
+const LS = "labRunway.v1";
+function setStatus(t) { $("#saveStatus").textContent = t; }
+function save() {
+  if (viewing) return;
+  if (!loaded) dirtyBeforeLoad = true;
+  clearTimeout(saveTimer);
+  setStatus("Saving…");
+  saveTimer = setTimeout(async () => {
+    const json = JSON.stringify(state);
+    try { localStorage.setItem(LS, json); } catch (e) {}
+    if (dbRef) {
+      try { await dbRef.set({json, updated: Date.now()}); setStatus("Saved"); }
+      catch (e) { setStatus("Couldn’t save to your account — kept on this device"); }
+    } else setStatus(persistMode === "local" ? "Saved on this device" : "Saved");
+    scheduleSnap();
+  }, 600);
+}
+function commit() { setFmt(); save(); render(); }
+function sanitize(st) {
+  const b = blank();
+  if (!st || typeof st !== "object") return b;
+  st.settings = Object.assign(b.settings, st.settings || {});
+  st.grants = Array.isArray(st.grants) ? st.grants : [];
+  st.expenses = Array.isArray(st.expenses) ? st.expenses : [];
+  st.expenses.forEach(e => { if (!Array.isArray(e.alloc)) e.alloc = []; });
+  st.grants.forEach(g => {
+    if (g.type !== "Fellowship" || g.personId) return;
+    const users = st.expenses.filter(e => (e.alloc || []).some(a => a.grantId === g.id));
+    if (users.length === 1) { g.personId = users[0].id; if (!g.fellowTitle) g.fellowTitle = String(g.name).split(/\s[—–-]\s/)[0]; }
+  });
+  st.grants.forEach(g => { if (g.idcRate == null) g.idcRate = 0; if (!g.idcBase) g.idcBase = "mtdc"; if (!g.awardBasis) g.awardBasis = "direct"; });
+  return st;
+}
+async function initStore() {
+  try { const raw = localStorage.getItem(LS); if (raw) state = sanitize(JSON.parse(raw)); } catch (e) {}
+  setFmt(); render();
+  if (!window.claude || !window.claude.use) { await loadHistory(); loaded = true; setStatus("Saved on this device"); firstSnap(); return; }
+  try {
+    const [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+    const id = user ? await user.id() : null;
+    if (db && id) {
+      dbRef = db.collection("data/users/" + id).doc("lab");
+      histRef = db.collection("data/users/" + id).doc("history");
+      snapCol = db.collection("data/users/" + id + "/lab/snaps");
+      persistMode = "account";
+      const snap = await dbRef.get();
+      if (snap.exists && !dirtyBeforeLoad) {
+        try { state = sanitize(JSON.parse(snap.data().json)); } catch (e) {}
+        setFmt(); render();
+      } else if (dirtyBeforeLoad) save();
+      setStatus("Saved to your account");
+    } else setStatus("Saved on this device");
+  } catch (e) { setStatus("Saved on this device"); }
+  await loadHistory();
+  loaded = true;
+  firstSnap();
+  render();
+}
+
+/* ---------- history ---------- */
+let histIndex = [], histRef = null, snapCol = null, viewing = null, liveState = null, snapTimer = null;
+let histSpan = (() => { try { const v = localStorage.getItem("labRunway.span"); return v == null ? 24 : v === "all" ? "all" : +v; } catch (e) { return 24; } })();
+let mapGroup = (() => { try { return localStorage.getItem("labRunway.mapGroup") || "category"; } catch (e) { return "category"; } })();
+const TYPES = ["Grant","Fellowship","Contract","Startup","Internal","Gift or endowment","Departmental support"];
+const typeRank = t => t === "No funding source" ? 99 : (TYPES.indexOf(t) < 0 ? 50 : TYPES.indexOf(t));
+let grantSort = (() => { try { return localStorage.getItem("labRunway.grantSort") || "added"; } catch (e) { return "added"; } })();
+const gT = G => G.g.type || "Grant";
+function sortGs(gs) {
+  const cmp = {type: (x, y) => typeRank(gT(x[0])) - typeRank(gT(y[0])), end: (x, y) => x[0].e - y[0].e, name: (x, y) => x[0].g.name.localeCompare(y[0].g.name)}[grantSort] || (() => 0);
+  return gs.map((G, i) => [G, i]).sort((x, y) => cmp(x, y) || x[1] - y[1]).map(x => x[0]);
+}
+const LSH = "labRunway.hist.v1", LSS = "labRunway.snap.";
+const dayKey = ts => { const d = new Date(ts); return d.getFullYear() + "-" + d.getMonth() + "-" + d.getDate(); };
+const fmtDate = ts => new Date(ts).toLocaleString(undefined, {year:"numeric", month:"short", day:"numeric", hour:"numeric", minute:"2-digit"});
+const hasData = st => st.grants.length || st.expenses.length;
+const summarize = st => { const P = project(st); return Object.fromEntries(P.gs.filter(G => !G.unl).map(G => [G.g.id, [G.g.name, G.g.color, G.avail, G.g.status]])); };
+const totalAvail = h => Object.values(h.bal || {}).filter(v => v[3] !== "pending").reduce((a, v) => a + v[2], 0);
+async function loadHistory() {
+  try { histIndex = JSON.parse(localStorage.getItem(LSH) || "[]"); } catch (e) { histIndex = []; }
+  if (histRef) { try { const sn = await histRef.get(); if (sn.exists) histIndex = JSON.parse(sn.data().json || "[]"); } catch (e) {} }
+  if (!Array.isArray(histIndex)) histIndex = [];
+}
+async function writeHistory() {
+  const json = JSON.stringify(histIndex);
+  try { localStorage.setItem(LSH, json); } catch (e) {}
+  if (histRef) { try { await histRef.set({json}); } catch (e) {} }
+}
+async function putSnap(sid, json) {
+  if (snapCol) { try { await snapCol.doc(sid).set({json}); return; } catch (e) {} }
+  try { localStorage.setItem(LSS + sid, json); } catch (e) {}
+}
+async function getSnap(sid) {
+  if (String(sid).startsWith("ex-")) {
+    const h = histIndex.find(x => x.sid === sid);
+    const base = h ? await getExampleBase(h.example) : null;
+    return base ? JSON.stringify(exampleAt(base, toIdx(h.asOf))) : null;
+  }
+  if (snapCol) { try { const sn = await snapCol.doc(sid).get(); if (sn.exists) return sn.data().json; } catch (e) {} }
+  try { return localStorage.getItem(LSS + sid); } catch (e) { return null; }
+}
+function dropSnap(sid) {
+  if (snapCol) snapCol.doc(sid).delete().catch(() => {});
+  try { localStorage.removeItem(LSS + sid); } catch (e) {}
+}
+function scheduleSnap() { clearTimeout(snapTimer); snapTimer = setTimeout(() => recordSnapshot("auto"), 8000); }
+function firstSnap() { if (!histIndex.length && hasData(state) && !viewing) recordSnapshot("auto"); }
+async function recordSnapshot(kind, note) {
+  if (viewing && kind === "auto") return;
+  if (kind === "auto" && !hasData(state)) return;
+  const json = JSON.stringify(state), ts = Date.now();
+  let entry = null;
+  const last = histIndex[histIndex.length - 1];
+  if (kind === "auto" && last && last.kind === "auto" && dayKey(last.ts) === dayKey(ts)) entry = last;
+  if (!entry) { entry = {sid: "s" + ts.toString(36) + uid().slice(0, 4)}; histIndex.push(entry); }
+  Object.assign(entry, {ts, kind, note: note || "", asOf: state.settings.start, bal: summarize(state)});
+  if (state.exampleId) entry.example = state.exampleId; else delete entry.example;
+  await putSnap(entry.sid, json);
+  thinHistory();
+  await writeHistory();
+  if (route() === "history" || route() === "overview") render();
+}
+function thinHistory() {
+  // keep every named version; automatic ones daily for 90 days, then one per week; at most 500 in total
+  const now = Date.now(), weeks = new Set(), keep = [], drop = [];
+  for (let i = histIndex.length - 1; i >= 0; i--) {
+    const h = histIndex[i];
+    if (h.kind !== "auto" || now - h.ts < 90 * 864e5) { keep.unshift(h); continue; }
+    const wk = Math.floor(h.ts / (7 * 864e5));
+    if (weeks.has(wk)) drop.push(h); else { weeks.add(wk); keep.unshift(h); }
+  }
+  while (keep.length > 500) { const i = keep.findIndex(h => h.kind === "auto"); if (i < 0) break; drop.push(keep.splice(i, 1)[0]); }
+  histIndex = keep; drop.forEach(h => dropSnap(h.sid));
+}
+let exBaseCache = {};
+async function getExampleBase(id) {
+  if (exBaseCache[id]) return exBaseCache[id];
+  const json = await getSnap("exbase-" + id);
+  if (json) exBaseCache[id] = JSON.parse(json);
+  return exBaseCache[id] || null;
+}
+function removeExampleHistory() {
+  const ids = new Set(histIndex.filter(h => h.example).map(h => h.example));
+  histIndex.filter(h => h.example && !String(h.sid).startsWith("ex-")).forEach(h => dropSnap(h.sid));
+  ids.forEach(id => dropSnap("exbase-" + id));
+  histIndex = histIndex.filter(h => !h.example);
+}
+async function loadExample() {
+  if (hasData(state) && !state.exampleId) await recordSnapshot("manual", "Before loading the example lab");
+  removeExampleHistory();
+  const base = exampleTimeline(); exBaseCache[base.exampleId] = base;
+  await putSnap("exbase-" + base.exampleId, JSON.stringify(base));
+  const s = toIdx(nowM()), t0 = toIdx(EX_T0);
+  for (let mi = t0 + 1; mi < s; mi++) {
+    histIndex.push({sid: "ex-" + base.exampleId + "-" + mi, ts: new Date(Math.floor(mi / 12), mi % 12, 3, 17, 0).getTime(),
+      kind: "auto", note: "", asOf: toM(mi), bal: summarize(exampleAt(base, mi)), example: base.exampleId});
+  }
+  histIndex.sort((a, b) => a.ts - b.ts);
+  await writeHistory();
+  histSpan = "all"; try { localStorage.setItem("labRunway.span", "all"); } catch (e) {}
+  state = exampleAt(base, s);
+  commit();
+}
+const vLabel = h => h.kind === "auto" ? `<span class="muted">${h.example ? "Example data" : "Automatic"}</span>` : esc(h.note || "Saved version");
+async function viewSnapshot(sid) {
+  const h = histIndex.find(x => x.sid === sid); if (!h) return;
+  const json = await getSnap(sid);
+  if (!json) { const m = $("#hMsg"); if (m) m.textContent = "That version couldn’t be loaded. It may have been saved on another device."; return; }
+  if (!viewing) liveState = state;
+  state = sanitize(JSON.parse(json)); viewing = h; setFmt();
+  if (route() === "history" || route() === "setup") location.hash = "overview"; else render();
+  window.scrollTo(0, 0);
+}
+function exitView() { if (!viewing) return; state = liveState; liveState = null; viewing = null; setFmt(); render(); }
+async function restoreView() {
+  const h = viewing, restored = JSON.parse(JSON.stringify(state));
+  state = liveState; liveState = null; viewing = null;
+  await recordSnapshot("manual", "Before restoring the version from " + fmtDate(h.ts));
+  state = restored; commit();
+}
+async function rollForward() {
+  const P = project(state), to = toIdx(nowM()), n = Math.min(P.N, to - P.S);
+  if (n <= 0) return;
+  await recordSnapshot("manual", "Before rolling forward to " + lbl(to));
+  P.gs.forEach(G => { if (G.auto) return; G.g.spent = Math.round(num(G.g.spent) + G.spend.slice(0, n).reduce((a, b) => a + b, 0)); });
+  state.settings.start = nowM();
+  commit();
+}
+
+/* ---------- routing / shell ---------- */
+const VIEWS = ["overview","map","grants","costs","history","setup"];
+const route = () => { const h = location.hash.slice(1); return VIEWS.includes(h) ? h : "overview"; };
+window.addEventListener("hashchange", render);
+$("#pendingToggle").addEventListener("change", e => { state.settings.includePending = e.target.checked; commit(); });
+
+function render() {
+  const r = route();
+  document.querySelectorAll("#tabs a").forEach(a => { if (a.getAttribute("href") !== "#" + r) a.removeAttribute("aria-current"); else a.setAttribute("aria-current","page"); });
+  $("#labName").textContent = state.settings.labName || "My lab";
+  $("#pendingToggle").checked = !!state.settings.includePending;
+  document.body.classList.toggle("viewing", !!viewing);
+  const bn = $("#banner");
+  if (viewing) {
+    bn.innerHTML = `<div class="banner"><span>Viewing your lab as it was on <b>${esc(fmtDate(viewing.ts))}</b>${viewing.note ? " — " + esc(viewing.note) : ""}. Editing is off.</span><span class="spacer"></span><button class="btn small" id="bExit">Return to today</button><button class="btn small primary" id="bRestore">Restore this version</button></div>`;
+    $("#bExit").onclick = exitView; confirmBtn($("#bRestore"), "Click again to replace current data", restoreView);
+  } else bn.innerHTML = "";
+  const P = project(state);
+  const v = $("#view");
+  if (r !== "setup" && r !== "history" && !state.grants.length && !state.expenses.length) { v.innerHTML = emptyView(); bindEmpty(); return; }
+  if (r === "overview") v.innerHTML = overviewView(P);
+  if (r === "map") v.innerHTML = mapView(P);
+  if (r === "grants") v.innerHTML = grantsView(P);
+  if (r === "costs") v.innerHTML = costsView(P);
+  if (r === "setup") v.innerHTML = viewing ? `<section class="panel"><p>Return to today to change settings.</p></section>` : setupView();
+  if (r === "history") v.innerHTML = historyView();
+  bind(r, P);
+}
+
+/* ---------- views ---------- */
+function emptyView() {
+  return `<div class="empty">
+    <h2>See how long your funding lasts.</h2>
+    <p>Add your grants and the costs they pay for — salaries, stipends, supplies, equipment — and Lab Runway projects every month ahead, showing when each grant runs out and which costs have no funding source.</p>
+    <div class="row" style="margin-top:20px">
+      <button class="btn primary" id="eAddGrant">Add your first grant</button>
+      <button class="btn" id="eExample">Explore an example lab</button>
+      <a class="btn" href="#setup" style="text-decoration:none">Import a backup</a>
+    </div></div>`;
+}
+function bindEmpty() {
+  $("#eAddGrant").onclick = () => editGrant(null);
+  $("#eExample").onclick = () => loadExample();
+}
+
+function overviewView(P) {
+  const nowK = 0;
+  const availNow = P.gs.filter(G => G.on && G.s <= P.S + P.N).reduce((s, G) => s + Math.max(0, G.avail), 0);
+  const burn12 = P.total.slice(0, 12).reduce((a, b) => a + b, 0) / Math.min(12, P.N);
+  const idc12 = P.idcAll.slice(0, 12).reduce((a, b) => a + b, 0);
+  const deptG = P.gs.filter(G => G.unl && G.on && G.g.type !== "Fellowship");
+  const felG = P.gs.filter(G => G.unl && G.on && G.g.type === "Fellowship");
+  const fel12 = P.fellowAll.slice(0, 12).reduce((a, b) => a + b, 0), felRec = felG.reduce((a, G) => a + G.spentEff, 0);
+  const dept12 = P.deptAll.slice(0, 12).reduce((a, b) => a + b, 0), deptAllT = P.deptAll.reduce((a, b) => a + b, 0);
+  const deptRec = deptG.reduce((a, G) => a + G.spentEff, 0);
+  const pending = P.gs.filter(G => G.g.status === "pending").reduce((s, G) => s + G.avail, 0);
+  let big, bigCls = "", sub;
+  if (P.breakK === null) { big = "the full " + (P.N / 12) + " years"; sub = `Every planned cost through ${lbl(P.S + P.N - 1)} has a funding source.`; }
+  else if (P.breakK === nowK) { big = "Gap now"; bigCls = "bad"; sub = `Some costs in ${lbl(P.S)} already have no funding source or exceed a grant’s balance. See below.`; }
+  else {
+    big = lbl(P.S + P.breakK - 1); 
+    const gapTotal = P.unfunded.reduce((a, b) => a + b, 0);
+    sub = `${P.breakK} month${P.breakK === 1 ? "" : "s"} from the projection start. After that, ${gapTotal > 0.5 ? fmt(gapTotal) + " of planned costs have no funding source" : "a grant is overdrawn"} within the ${P.N / 12}-year horizon.`;
+  }
+  const alerts = buildAlerts(P);
+  const behind = toIdx(nowM()) - P.S;
+  const roll = !viewing && behind > 0 ? `<div class="banner roll"><span>The projection starts in ${lbl(P.S)}, ${behind} month${behind === 1 ? "" : "s"} ago. Rolling forward to ${lbl(P.S + behind)} adds the projected spending for those months to each grant’s spent total and records the change in History. You can correct the figures afterwards on the Support page.</span><span class="spacer"></span><button class="btn small primary" id="oRoll">Roll forward</button></div>` : "";
+  const spans = [[0,"Off"],[12,"1 yr"],[24,"2 yrs"],["all","All"]];
+  return `${roll}
+  <section class="hero">
+    <div>
+      <p class="lead">Fully funded through</p>
+      <div class="big ${bigCls}">${esc(big)}</div>
+      <p class="sub">${sub}</p>
+    </div>
+    <div class="figs">
+      <div class="fig"><b>${fmtc(availNow)}</b><span>Available${state.settings.includePending ? " incl. pending" : ""}</span></div>
+      <div class="fig"><b>${fmtc(burn12)}</b><span>Monthly direct spend, next 12 months</span></div>
+      <div class="fig"><b>${fmtc(idc12)}</b><span>Indirect costs, next 12 months</span></div>
+      <div class="fig"><b>${fmtc(pending)}</b><span>In pending grants</span></div>
+      ${deptG.length ? `<div class="fig"><b>${fmtc(deptRec)}</b><span>Departmental support received to date</span></div>
+      <div class="fig"><b>${fmtc(dept12)}</b><span>Departmental support, next 12 months <span class="muted">(${fmtc(deptAllT)} over ${P.N / 12} yrs)</span></span></div>` : ""}
+      ${felG.length ? `<div class="fig"><b>${fmtc(fel12)}</b><span>Fellowship support, next 12 months <span class="muted">(${fmtc(felRec)} received to date)</span></span></div>` : ""}
+    </div>
+  </section>
+  <section class="panel">
+    <h2>Overview</h2>
+    <div class="row"><p class="hint" style="margin:0">Remaining balance of each grant. Left of the divider is the past — lines worked back from your plan, with dots for balances saved in History; right is the projection. Scroll sideways to move through time. Red bars are costs with no funding source.</p><span class="spacer"></span>
+      <label class="switch" style="font-size:.82rem" title="Include grants and fellowships marked pending"><input type="checkbox" id="oPending" ${state.settings.includePending ? "checked" : ""}> Include pending</label>
+      <span class="muted" style="font-size:.82rem">Show past</span><span class="seg">${spans.map(([v, t]) => `<button data-span="${v}" aria-pressed="${String(v) === String(histSpan)}">${t}</button>`).join("")}</span></div>
+    <div class="legend">${P.gs.filter(G => G.on && !G.unl).map(G => `<span><i style="background:${esc(G.g.color)}"></i>${esc(G.g.name)}</span>`).join("")}</div>
+    ${(() => { const svg = chartSVG(P); return `<div class="chartrow"><div class="yaxcol">${P.hist.axis}</div><div class="chartwrap" id="chartwrap">${svg}<div class="tip" id="tip"></div></div></div>`; })()}
+  </section>
+  <section class="panel">
+    <h2>What needs attention</h2>
+    ${alerts.length ? `<ul class="alerts">${alerts.map(a => `<li class="${a.lvl}"><span class="dot"></span><div>${a.t}<br><small>${a.s}</small></div></li>`).join("")}</ul>`
+      : `<ul class="alerts"><li class="good"><span class="dot"></span><div>Nothing to flag. Every cost is covered and no grant is overdrawn.</div></li></ul>`}
+  </section>`;
+}
+
+function niceStep(range) {
+  const raw = range / 4, p = Math.pow(10, Math.floor(Math.log10(raw || 1)));
+  const f = raw / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * p;
+}
+function pastSeries(P) {
+  const map = new Map();
+  if (!histSpan) return {past:0, H:P.S, map};
+  const cutoff = viewing ? viewing.ts : Infinity;
+  [...histIndex].filter(h => h.ts <= cutoff && validM(h.asOf) && h.example === state.exampleId).sort((x, y) => x.ts - y.ts)
+    .forEach(h => { const mi = toIdx(h.asOf); if (mi < P.S) map.set(mi, h); });
+  if (!map.size) return {past:0, H:P.S, map};
+  const earliest = Math.min(...map.keys());
+  const H = histSpan === "all" ? earliest : Math.max(earliest, P.S - histSpan);
+  for (const mi of [...map.keys()]) if (mi < H) map.delete(mi);
+  return {past: P.S - H, H, map};
+}
+function chartSVG(P) {
+  // Past months: balances worked back from today's balance using the plan's spending, plus dots for balances recorded in saved versions.
+  const PS = pastSeries(P), PR = pastRun(P);
+  const past = Math.max(PS.past, PR.past), H0 = P.S - past, T = past + P.N;
+  const ml = 70, mr = 18, TT0 = 26, TH = 84, mt = TT0 + TH + 34, H = mt + 268, UH = 64, gapH = 30;
+  const W = Math.max(960, ml + mr + T * 13);
+  const totalH = H + gapH + UH + 22;
+  const on = P.gs.filter(G => G.on && !G.unl);
+  const pastBal = new Map();
+  const pIdx = mi => mi - (P.S - PR.past);
+  // Past balances run forward from the full award at each grant's start, less the plan's charges each month
+  // (including indirect when the award covers it), so a grant never starts above its award.
+  const PA = pastRun(P, "all"), aIdx = mi => mi - (P.S - PA.past);
+  on.forEach(G => {
+    const arr = new Array(past).fill(null), PG = PA.PP ? PA.PP.gm[G.g.id] : null, u = unitemised(P, G, PA);
+    let b = Math.max(0, num(G.g.amount));
+    for (let mi = G.s; mi < P.S; mi++) {
+      const k = aIdx(mi);
+      if (mi >= H0 && mi <= G.e) arr[mi - H0] = b; // balance at the start of the month, before its charges
+      if (PG && k >= 0 && k < PG.spend.length) b -= PG.spend[k];
+      if (u && mi >= u.from && mi <= u.to) b -= u.per;
+    }
+    pastBal.set(G.g.id, arr);
+  });
+  const pastGap = new Array(past).fill(0), pastDir = new Array(past).fill(0), pastIdc = new Array(past).fill(0), pastDept = new Array(past).fill(0), pastFel = new Array(past).fill(0);
+  if (PR.PP) for (let j = 0; j < past; j++) {
+    const k = pIdx(H0 + j);
+    if (k >= 0 && k < PR.PP.unfunded.length) { pastGap[j] = PR.PP.unfunded[k]; pastDir[j] = PR.PP.total[k]; pastIdc[j] = PR.PP.idcAll[k]; pastDept[j] = PR.PP.deptAll[k]; pastFel[j] = PR.PP.fellowAll[k]; }
+  }
+  P.hist = {past, H0, T, W, pastBal, rec: PS.map, pastGap, pastDir, pastIdc, pastDept, pastFel};
+  // total still available across all grants counted in the projection, month by month (overdrawn grants count as zero)
+  const tot = new Array(T).fill(null);
+  on.forEach(G => {
+    pastBal.get(G.g.id).forEach((v, j) => { if (v != null) tot[j] = (tot[j] || 0) + Math.max(0, v); });
+    G.bal.forEach((_, k) => { const mi = P.S + k; if (mi >= G.s && mi <= G.e) tot[past + k] = (tot[past + k] || 0) + Math.max(0, k ? G.bal[k - 1] : G.avail); });
+  });
+  P.hist.tot = tot;
+  let ymax = 0, ymin = 0;
+  on.forEach(G => {
+    ymax = Math.max(ymax, G.avail);
+    G.bal.forEach((b, k) => { const mi = P.S + k; if (mi >= G.s && mi <= G.e) { ymax = Math.max(ymax, b); ymin = Math.min(ymin, b); } });
+    pastBal.get(G.g.id).forEach(v => { if (v != null) { ymax = Math.max(ymax, v); ymin = Math.min(ymin, v); } });
+  });
+  PS.map.forEach((h, mi) => { if (mi >= H0) Object.values(h.bal || {}).forEach(v => { ymax = Math.max(ymax, v[2]); }); });
+  if (ymax <= 0) ymax = 1;
+  const step = niceStep(ymax - ymin);
+  const top = Math.ceil(ymax / step) * step, bot = Math.floor(ymin / step) * step;
+  const pw = W - ml - mr, xj = j => ml + (j + 0.5) * pw / T, xk = k => xj(k + past);
+  const y = v => mt + (top - v) / (top - bot || 1) * (H - mt);
+  let s = `<svg viewBox="0 0 ${W} ${totalH}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Grant balances over time" id="chart" style="${W > 960 ? `width:${W}px;max-width:none` : ""}">`;
+  if (past) s += `<rect x="${ml}" y="${TT0}" width="${past * pw / T}" height="${H + gapH + UH - TT0}" fill="var(--sunk)" opacity=".55"/>`;
+  for (let v = bot; v <= top + 1e-6; v += step) {
+    if (Math.abs(v) > 1e-6) s += `<line x1="${ml}" x2="${W - mr}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)"/>`;
+  }
+  for (let j = 0; j < T; j++) { const mi = H0 + j; if (mi % 12 === 0 || j === 0) {
+    const x = ml + j * pw / T;
+    s += `<line x1="${x}" x2="${x}" y1="${TT0}" y2="${H + gapH + UH}" stroke="var(--line)"/>`;
+    s += `<text x="${x + 4}" y="${totalH - 6}" font-size="11" fill="var(--muted)">${mi % 12 === 0 ? Math.floor(mi / 12) : lbl(mi)}</text>`;
+  } }
+  const xd = ml + past * pw / T;
+  if (past) {
+    s += `<line x1="${xd}" x2="${xd}" y1="${TT0 - 8}" y2="${H + gapH + UH}" stroke="var(--ink)" stroke-dasharray="3 3" opacity=".6"/>`;
+    s += `<text x="${xd - 6}" y="${TT0 - 10}" text-anchor="end" font-size="11" fill="var(--muted)">Past</text><text x="${xd + 6}" y="${TT0 - 10}" font-size="11" fill="var(--muted)">Projected</text>`;
+  }
+  // small plot along the top: total still available across grants
+  const tmax0 = Math.max(1, ...tot.map(v => v || 0)), tstep = niceStep(tmax0), tmax = Math.ceil(tmax0 / tstep) * tstep;
+  const ty = v => TT0 + TH - v / tmax * TH;
+  s += `<line x1="${ml}" x2="${W - mr}" y1="${TT0 + TH}" y2="${TT0 + TH}" stroke="var(--line)"/><line x1="${ml}" x2="${W - mr}" y1="${TT0}" y2="${TT0}" stroke="var(--line)" stroke-dasharray="2 3"/>`;
+  {
+    let ta = "", tl = "", run = [];
+    const pts = r => r.map(([x, v]) => `${x.toFixed(1)} ${ty(v).toFixed(1)}`).join("L");
+    const flush = () => { if (run.length) { tl += "M" + pts(run); ta += `M${run[0][0].toFixed(1)} ${TT0 + TH}L${pts(run)}L${run[run.length - 1][0].toFixed(1)} ${TT0 + TH}Z`; } run = []; };
+    tot.forEach((v, j) => { if (v == null) flush(); else run.push([xj(j), v]); }); flush();
+    s += `<path d="${ta}" fill="var(--primary)" opacity=".14"/><path d="${tl}" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linejoin="round"/>`;
+  }
+  s += `<text x="${(past ? xd : ml) + 8}" y="${TT0 + 13}" font-size="11" font-weight="600" fill="var(--muted)">Total support available</text>`;
+  if (tot[past] != null) s += `<circle cx="${xk(0).toFixed(1)}" cy="${ty(tot[past]).toFixed(1)}" r="3.5" fill="var(--primary)"/><text x="${(xk(0) + 7).toFixed(1)}" y="${(ty(tot[past]) - 6).toFixed(1)}" font-size="11" font-weight="700" fill="var(--ink)">${esc(fmtc(tot[past]))}</text>`;
+  if (true) {
+  }
+  // $0: a firm line, and a tinted "overspent" zone below it where any balance turns red
+  const negDs = [];
+  if (bot < 0) {
+    s += `<rect x="${ml}" y="${y(0)}" width="${pw}" height="${y(bot) - y(0)}" fill="var(--bad)" opacity=".08"/>`;
+    s += `<text x="${(past ? xd : ml) + 8}" y="${y(0) + 15}" font-size="11" font-weight="600" fill="var(--bad)">Overspent</text>`;
+  }
+  s += `<line x1="${ml}" x2="${W - mr}" y1="${y(0)}" y2="${y(0)}" stroke="var(--ink)" stroke-width="1.5" opacity=".7"/>`;
+  // past lines (from the plan), joined to the projection
+  on.forEach(G => {
+    const arr = pastBal.get(G.g.id); let d = "";
+    arr.forEach((v, j) => { if (v == null) { return; } d += (d ? "L" : "M") + xj(j).toFixed(1) + " " + y(v).toFixed(1); });
+    if (d && P.S >= G.s && P.S <= G.e) d += "L" + xk(0).toFixed(1) + " " + y(G.avail).toFixed(1);
+    if (d) { s += `<path d="${d}" fill="none" stroke="${esc(G.g.color)}" stroke-width="2" stroke-linejoin="round" opacity=".6"/>`; negDs.push(d); }
+  });
+  // recorded balances from saved versions
+  PS.map.forEach((h, mi) => {
+    if (mi < H0) return;
+    Object.entries(h.bal || {}).forEach(([id, v]) => {
+      const col = gById(id) ? gById(id).color : v[1];
+      s += `<circle cx="${xj(mi - H0).toFixed(1)}" cy="${y(v[2]).toFixed(1)}" r="3.2" fill="var(--surface)" stroke="${esc(col)}" stroke-width="1.8"/>`;
+    });
+  });
+  on.forEach(G => {
+    let d = "";
+    for (let k = 0; k < P.N; k++) { const mi = P.S + k; if (mi < G.s || mi > G.e) continue; d += (d ? "L" : "M") + xk(k).toFixed(1) + " " + y(k ? G.bal[k - 1] : G.avail).toFixed(1); }
+    if (d) { s += `<path d="${d}" fill="none" stroke="${esc(G.g.color)}" stroke-width="2.4" stroke-linejoin="round" ${G.g.status === "pending" ? 'stroke-dasharray="6 4"' : ""}/>`; negDs.push(d); }
+  });
+  if (bot < 0 && negDs.length) s += `<defs><clipPath id="negclip"><rect x="${ml}" y="${y(0)}" width="${pw}" height="${y(bot) - y(0) + 4}"/></clipPath></defs><g clip-path="url(#negclip)">${negDs.map(d => `<path d="${d}" fill="none" stroke="var(--bad)" stroke-width="2.8" stroke-linejoin="round"/>`).join("")}</g>`;
+  if (false) on.forEach(() => {
+  });
+  const umax = Math.max(...P.unfunded, ...pastGap, 1), uy0 = H + gapH;
+  s += `<line x1="${ml}" x2="${W - mr}" y1="${uy0 + UH}" y2="${uy0 + UH}" stroke="var(--line)"/>`;
+  const bw = Math.max(1, pw / T - 1.5);
+  pastGap.forEach((u, j) => { if (u > 0.5) { const h = u / umax * (UH - 4); s += `<rect x="${xj(j) - bw / 2}" y="${uy0 + UH - h}" width="${bw}" height="${h}" fill="var(--bad)" opacity=".5" rx="1"/>`; } });
+  P.unfunded.forEach((u, k) => { if (u > 0.5) { const h = u / umax * (UH - 4); s += `<rect x="${xk(k) - bw / 2}" y="${uy0 + UH - h}" width="${bw}" height="${h}" fill="var(--bad)" rx="1"/>`; } });
+  s += `<line id="hov" x1="0" x2="0" y1="${TT0}" y2="${uy0 + UH}" stroke="var(--ink)" stroke-width="1" opacity="0"/>`;
+  s += `<rect id="hit" x="${ml}" y="0" width="${pw}" height="${uy0 + UH}" fill="transparent"/>`;
+  // y-axis labels: inside the plot when it fits the width, otherwise in a pinned column so they stay visible while the plot scrolls
+  let labels = `<text x="${ml - 8}" y="${ty(tmax) + 4}" text-anchor="end" font-size="11" fill="var(--muted)">${esc(fmtc(tmax))}</text><text x="${ml - 8}" y="${ty(0) + 4}" text-anchor="end" font-size="11" fill="var(--muted)">${esc(fmt(0))}</text>`;
+  for (let v = bot; v <= top + 1e-6; v += step) labels += `<text x="${ml - 8}" y="${y(v) + 4}" text-anchor="end" font-size="11" fill="var(--muted)">${esc(fmtc(v))}</text>`;
+  labels += `<text x="${ml - 8}" y="${uy0 + 12}" text-anchor="end" font-size="11" fill="var(--bad)">No source</text>`;
+  if (W > 960) P.hist.axis = `<svg viewBox="0 0 ${ml} ${totalH}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" style="width:${ml}px;height:${totalH}px">${labels}</svg>`;
+  else { P.hist.axis = ""; s += labels; }
+  s += `</svg>`;
+  P.hist.xd = xd; P.hist.totalH = totalH;
+  return s;
+}
+function bindChart(P) {
+  const svg = $("#chart"); if (!svg) return;
+  const tip = $("#tip"), hov = $("#hov"), wrap = $("#chartwrap");
+  const Hs = P.hist, T = Hs.T, W = Hs.W, ml = 70, mr = 18, pw = W - ml - mr;
+  const move = ev => {
+    const r = svg.getBoundingClientRect();
+    const sx = (ev.clientX - r.left) / r.width * W;
+    const j = Math.max(0, Math.min(T - 1, Math.floor((sx - ml) / pw * T)));
+    const x = ml + (j + 0.5) * pw / T;
+    hov.setAttribute("x1", x); hov.setAttribute("x2", x); hov.setAttribute("opacity", ".35");
+    // spending first, then the total still available, then the detail behind it
+    const past = j < Hs.past, k = j - Hs.past, mi = Hs.H0 + j;
+    const dir = past ? Hs.pastDir[j] : P.total[k], idc = past ? Hs.pastIdc[j] : P.idcAll[k];
+    const dept = past ? Hs.pastDept[j] : P.deptAll[k], fel = past ? Hs.pastFel[j] : P.fellowAll[k], gap = past ? Hs.pastGap[j] : P.unfunded[k];
+    const rec = past ? Hs.rec.get(mi) : null;
+    const row = (label, v, cls = "", strong = false) => `<div class="${cls}"><span>${label}</span>${strong ? `<b>${fmt(v)}</b>` : `<span>${fmt(v)}</span>`}</div>`;
+    let h = `<div><b>${lbl(mi)}</b><span style="opacity:.75">${past ? "past · from plan" : "projected"}</span></div>`;
+    h += `<div class="tsec">Spending this month</div>` + row("Direct", dir) + row("Indirect", idc) + row("Total", dir + idc, "", true);
+    if (Hs.tot[j] != null) h += `<div class="tsec">Support</div>` + row("Total support available", Hs.tot[j], "", true);
+    else h += `<div class="tsec">Support</div>`;
+    // every support line, largest first
+    const items = [];
+    P.gs.filter(G => G.on && !G.unl && mi >= G.s && mi <= G.e).forEach(G => {
+      const v = past ? Hs.pastBal.get(G.g.id)[j] : (k ? G.bal[k - 1] : G.avail); if (v == null) return;
+      const rv = rec && rec.bal && rec.bal[G.g.id] ? rec.bal[G.g.id][2] : null;
+      items.push({v, html: `<div><span><i class="sw" style="background:${esc(G.g.color)}"></i>${esc(G.g.name)}</span><span class="${v < 0 ? "neg" : ""}">${fmt(v)}${rv != null ? ` <span style="opacity:.7">(saved ${fmt(rv)})</span>` : ""}</span></div>`});
+    });
+    if (dept > 0.5) items.push({v: dept, html: row("Departmental support paid", dept)});
+    if (fel > 0.5) items.push({v: fel, html: row("Fellowship support paid", fel)});
+    items.sort((a, b) => b.v - a.v).forEach(x => h += x.html);
+    if (gap > 0.5) h += row("No funding source", gap, "neg");
+    h += `<div><span style="opacity:.65;font-size:.74rem">Balances at the start of the month${rec ? ` · version saved ${esc(fmtDate(rec.ts))}` : ""}</span></div>`;
+    tip.innerHTML = h; tip.style.display = "block";
+    const wr = wrap.getBoundingClientRect();
+    let left = ev.clientX - wr.left + wrap.scrollLeft + 14;
+    if (left + tip.offsetWidth > wrap.scrollLeft + wr.width) left = ev.clientX - wr.left + wrap.scrollLeft - tip.offsetWidth - 14;
+    tip.style.left = left + "px"; tip.style.top = "10px";
+  };
+  svg.addEventListener("pointermove", move);
+  svg.addEventListener("pointerleave", () => { tip.style.display = "none"; hov.setAttribute("opacity", "0"); });
+  // open with the start of the projection about a quarter of the way in, so the past is a scroll to the left
+  if (W > 960 && Hs.past) wrap.scrollLeft = Math.max(0, Hs.xd * (svg.getBoundingClientRect().width / W || 1) - wrap.clientWidth * 0.25);
+}
+
+// Months before the projection start, filled in from the plan, limited by "Show past" and the earliest start date (max 10 years).
+function pastRun(P, span = histSpan) {
+  const starts = [...state.expenses, ...state.grants].map(x => validM(x.start) ? toIdx(x.start) : P.S);
+  const earliest = Math.min(P.S, ...starts);
+  let past = !span ? 0 : span === "all" ? P.S - earliest : Math.min(span, P.S - earliest);
+  past = Math.max(0, Math.min(120, past));
+  if (!past) return {past:0, PP:null};
+  const run = JSON.parse(JSON.stringify(state));
+  run.settings.start = toM(P.S - past); run.settings.years = Math.ceil(past / 12); run._noAuto = true;
+  return {past, PP: project(run)};
+}
+let mapCollapsed = (() => { try { return new Set(JSON.parse(localStorage.getItem("labRunway.mapCollapsed") || "[]")); } catch (e) { return new Set(); } })();
+let supGroup = (() => { try { return localStorage.getItem("labRunway.supGroup") || "type"; } catch (e) { return "type"; } })();
+const inAttr = keys => `data-in="${esc(keys.join("|"))}"${keys.some(k => mapCollapsed.has(k)) ? " hidden" : ""}`;
+function mapView(P, part = "all") {
+  const today = toIdx(nowM());
+  // How far back to show: limited by the "Show past" setting and by the earliest start date in the plan (max 10 years).
+  const starts = [...state.expenses, ...state.grants].map(x => validM(x.start) ? toIdx(x.start) : P.S);
+  const earliest = Math.min(P.S, ...starts);
+  let past = !histSpan ? 0 : histSpan === "all" ? P.S - earliest : Math.min(histSpan, P.S - earliest);
+  past = Math.max(0, Math.min(120, past));
+  let PP = null;
+  if (past) {
+    const run = JSON.parse(JSON.stringify(state));
+    run.settings.start = toM(P.S - past); run.settings.years = Math.ceil(past / 12); run._noAuto = true;
+    PP = project(run);
+  }
+  const rec = past ? pastSeries(P).map : new Map();
+  const T = past + P.N;
+  const col = j => j < past ? {X:PP, k:j, mi:P.S - past + j, old:true} : {X:P, k:j - past, mi:P.S + j - past, old:false};
+  let head1 = `<tr><th class="lab"></th>`, head2 = `<tr><th class="lab"></th>`;
+  for (let j = 0; j < T;) {
+    const mi = P.S - past + j, yr = Math.floor(mi / 12);
+    let span = Math.min(12 - (((mi % 12) + 12) % 12), T - j);
+    if (j < past) span = Math.min(span, past - j);
+    head1 += `<th class="yr" colspan="${span}">${span >= 3 ? yr : ""}</th>`; j += span;
+  }
+  for (let j = 0; j < T; j++) { const mi = P.S - past + j; head2 += `<th class="mo${past && j === past ? " projstart" : ""}">${MN[mi % 12][0]}</th>`; }
+  head1 += "</tr>"; head2 += "</tr>";
+  const cls = j => { const {mi, old} = col(j); return (mi % 12 === 0 ? " ys" : "") + (mi === today ? " today" : "") + (old ? " pastc" : "") + (past && j === past ? " proj" : ""); };
+  // Group headings: the label sits in the sticky first column (so it stays visible while scrolling); the rest of the row is a filler cell.
+  const grpRow = (key, label, n, parents = [], extra = "") => `<tr class="grph" ${parents.length ? inAttr(parents) : ""}><td class="lab grp" ${extra}><button class="caret" data-gk="${esc(key)}" aria-expanded="${!mapCollapsed.has(key)}"><span class="car" aria-hidden="true">▸</span>${esc(label)} <span class="muted cnt">${n}</span></button></td><td class="grpfill" colspan="${T}"></td></tr>`;
+  let body = part === "costs" ? "" : grpRow("grants", "Support", P.gs.length);
+  const gType = G => G.g.type || "Grant";
+  // support rows can be grouped by type, funder or status (separately from how costs are grouped)
+  const supStatus = G => G.g.status === "pending" ? "Pending" : G.e < P.S ? "Ended" : G.s > P.S ? "Upcoming" : "Active";
+  const gKey = G => supGroup === "type" ? gType(G) : supGroup === "funder" ? (G.g.funder || "Unspecified funder") : supGroup === "status" ? supStatus(G) : null;
+  const gRank = k => supGroup === "type" ? typeRank(k) : supGroup === "status" ? ["Active","Upcoming","Pending","Ended"].indexOf(k) : 0;
+  const gOrder = P.gs.map((G, gi) => [G, gi]);
+  if (supGroup !== "none") gOrder.sort((a, b) => gRank(gKey(a[0])) - gRank(gKey(b[0])) || String(gKey(a[0])).localeCompare(String(gKey(b[0]))) || a[1] - b[1]);
+  let lastType = null;
+  if (part !== "costs") gOrder.forEach(([G, gi]) => {
+    const gk = gKey(G);
+    if (supGroup !== "none" && gk !== lastType) { lastType = gk; body += grpRow("gs:" + supGroup + ":" + gk, gk, gOrder.filter(([x]) => gKey(x) === gk).length, ["grants"], 'style="padding:6px 0 0 14px;height:26px"'); }
+    const gkeys = supGroup !== "none" ? ["grants", "gs:" + supGroup + ":" + gk] : ["grants"];
+    body += `<tr class="exp" data-grant="${esc(G.g.id)}" ${inAttr(gkeys)}><td class="lab" title="${esc(G.g.name)}"><i class="sw" style="background:${esc(G.g.color)}"></i>${esc(G.g.name)}${G.g.status === "pending" ? ' <span class="tag pending">pending</span>' : ""}</td>`;
+    for (let j = 0; j < T; j++) {
+      const {k, mi, old} = col(j), act = mi >= G.s && mi <= G.e;
+      let st = "", c = "", tip = `${G.g.name} · ${lbl(mi)}`;
+      if (old) {
+        if (act) st = G.on ? `background:color-mix(in srgb, ${G.g.color} 30%, transparent)` : `background:repeating-linear-gradient(135deg, color-mix(in srgb, ${G.g.color} 25%, transparent) 0 2px, transparent 2px 5px)`;
+        const h = rec.get(mi), v = h && h.bal ? h.bal[G.g.id] : null;
+        if (v) tip += ` · recorded balance ${fmt(v[2])}`;
+        else if (act && G.unl) tip += ` · paid ${fmt(PP.gs[gi].dir[k])} (from plan)`;
+      } else {
+        if (act && G.on) { if (G.bal[k] < -0.5) c = " hatch"; else st = `background:color-mix(in srgb, ${G.g.color} 30%, transparent)`; }
+        else if (act) st = `background:repeating-linear-gradient(135deg, color-mix(in srgb, ${G.g.color} 25%, transparent) 0 2px, transparent 2px 5px)`;
+        if (act && G.on) tip += G.unl ? " · paid " + fmt(G.dir[k]) : " · balance " + fmt(G.bal[k]);
+      }
+      body += `<td class="c${cls(j)}${c}" style="${st}" title="${esc(tip)}"></td>`;
+    }
+    body += "</tr>";
+  });
+  // Main funding source of each cost: the grant paying the most across the projection (else the past months shown, else its first funding line).
+  const primary = ri => {
+    const tally = {};
+    let hasCells = false;
+    for (const X of [P, PP]) {
+      if (!X) continue;
+      X.rows[ri].cells.forEach(c => { if (!c) return; if (X === P) hasCells = true; c.parts.forEach(p => { if (p.gid) tally[p.gid] = (tally[p.gid] || 0) + p.amt; }); });
+      if (Object.keys(tally).length || hasCells) break;
+    }
+    let best = null, bv = -1;
+    for (const [id, v] of Object.entries(tally)) if (v > bv) { best = id; bv = v; }
+    if (best === null && !hasCells) { const a = (P.rows[ri].ex.alloc || [])[0]; return a ? gById(a.grantId) || null : null; }
+    return best ? gById(best) || null : null;
+  };
+  const keys = P.rows.map((r, ri) => {
+    if (mapGroup === "category") return r.ex.category || "Other";
+    if (mapGroup === "role") return r.ex.category === "Personnel" ? (r.ex.role || "Personnel — no role set") : (r.ex.category || "Other");
+    const g = primary(ri);
+    if (!g) return "No funding source";
+    return mapGroup === "type" ? (g.type || "Grant") : g.name;
+  });
+  let cats = [...new Set(keys)];
+  if (mapGroup === "type") cats.sort((a, b) => typeRank(a) - typeRank(b));
+  if (mapGroup === "role") {
+    const OTHER = ["Supplies","Equipment","Services","Travel","Publication","Tuition","Subaward","Other"];
+    const rank = c => ROLES.includes(c) ? ROLES.indexOf(c) : c === "Personnel — no role set" ? 50 : 100 + Math.max(0, OTHER.indexOf(c));
+    cats.sort((a, b) => rank(a) - rank(b));
+  }
+  if (mapGroup === "source") { const gi = n => { const i = state.grants.findIndex(g => g.name === n); return i < 0 ? 999 : i; }; cats.sort((a, b) => gi(a) - gi(b)); }
+  for (const cat of (part === "grants" ? [] : cats)) {
+    const head = mapGroup === "category" || mapGroup === "role" || cat === "No funding source" ? cat : "Paid mainly by " + cat;
+    const ck = "c:" + mapGroup + ":" + cat;
+    body += grpRow(ck, head, keys.filter(k => k === cat).length);
+    P.rows.forEach((r, ri) => {
+      if (keys[ri] !== cat) return;
+      body += `<tr class="exp" data-exp="${esc(r.ex.id)}" ${inAttr([ck])}><td class="lab" title="${esc(r.ex.name)}">${esc(r.ex.name)}</td>`;
+      for (let j = 0; j < T; j++) {
+        const {X, k, mi, old} = col(j), c = X.rows[ri].cells[k];
+        if (!c) { body += `<td class="c${cls(j)}"></td>`; continue; }
+        const sum = c.parts.reduce((a, p) => a + p.amt, 0) || 1;
+        let acc = 0; const stops = [];
+        c.parts.forEach(p => { const a0 = acc / sum * 100; acc += p.amt; const a1 = acc / sum * 100; const cc = p.gid ? gColor(p.gid) : "var(--bad)"; stops.push(`${cc} ${a0.toFixed(1)}% ${a1.toFixed(1)}%`); });
+        const allGap = c.parts.length === 1 && !c.parts[0].gid;
+        const t = `${r.ex.name} · ${lbl(mi)} · ${fmt(c.cost)}${old ? " (from plan)" : ""}\n` + c.parts.map(p => `${p.gid ? (gById(p.gid) || {}).name : "No funding source"}: ${fmt(p.amt)}${p.idc > 0.5 ? " + " + fmt(p.idc) + " indirect" : ""}`).join("\n");
+        body += `<td class="c${cls(j)}${allGap ? " hatch" : ""}${c.over ? " over" : ""}" style="background:linear-gradient(to bottom, ${stops.join(", ")})" title="${esc(t)}"></td>`;
+      }
+      body += "</tr>";
+    });
+  }
+  const spans = [[0,"Off"],[12,"1 yr"],[24,"2 yrs"],["all","All"]];
+  return `<section class="panel">
+    <div class="row"><div><h2>${part === "grants" ? "Support timeline" : part === "costs" ? "Costs timeline" : "Funding map"}</h2><p class="hint" style="margin:0">${part === "grants" ? "Each row is a source of support, each column a month — shaded while active, hatched when overdrawn. Click a row to see how its money is spent." : `Each row is a cost, each column a month. Colour shows which grant pays; red means nothing does. Click a row to edit it.${part === "all" ? " Support rows at the top are shaded while active and hatched when overdrawn." : ""}`}</p></div>
+    ${part === "all" ? `<span class="spacer"></span><button class="btn small" id="mAddCost">Add cost</button><button class="btn small" id="mAddGrant">Add grant</button>` : ""}</div>
+    <div class="row" style="margin-top:12px"><div class="legend" style="margin:0">${state.grants.map(g => `<span><i style="background:${esc(g.color)}"></i>${esc(g.name)}</span>`).join("")}${part === "grants" ? `<span><i class="hatch"></i>Overdrawn</span>` : `<span><i class="hatch"></i>No funding source</span><span><i style="outline:2px solid var(--warn);outline-offset:-2px"></i>Over 100% assigned</span>`}${past ? `<span><i style="background:var(--muted);opacity:.45"></i>Past months</span>` : ""}</div>
+    <span class="spacer"></span><span class="seg"><button data-gall="collapse">Collapse all</button><button data-gall="expand">Expand all</button></span>${part === "costs" ? "" : `<label class="muted" style="font-size:.82rem;display:flex;gap:6px;align-items:center">Group support by <select id="sGroup" class="txt" style="padding:3px 6px;font-size:.84rem">${[["none","None"],["type","Type"],["funder","Funding agency"],["status","Status"]].map(([v, t]) => `<option value="${v}" ${v === supGroup ? "selected" : ""}>${t}</option>`).join("")}</select></label>`}${part === "grants" ? "" : `<label class="muted" style="font-size:.82rem;display:flex;gap:6px;align-items:center">Group costs by <select id="mGroup" class="txt" style="padding:3px 6px;font-size:.84rem">${[["category","Category"],["role","Employee role"],["type","Grant type"],["source","Funding source"]].map(([v, t]) => `<option value="${v}" ${v === mapGroup ? "selected" : ""}>${t}</option>`).join("")}</select></label>`}<span class="muted" style="font-size:.82rem">Show past</span><span class="seg">${spans.map(([v, t]) => `<button data-span="${v}" aria-pressed="${String(v) === String(histSpan)}">${t}</button>`).join("")}</span></div>
+    ${past ? `<p class="hint" style="margin:8px 0 0">Months before ${lbl(P.S)} are faded and filled in from each cost’s dates and funding split. Hover a grant’s past month to see its recorded balance, where a version was saved. Scroll left to go further back.</p>` : P.S > earliest ? "" : ""}
+    <div class="tbl-wrap" id="mapwrap" style="margin-top:8px"><table class="map"><thead>${head1}${head2}</thead><tbody>${body}</tbody></table></div>
+  </section>`;
+}
+
+function fyOf(mi) {
+  const f = Math.max(1, Math.min(12, num(state.settings.fyStart) || 1));
+  const y = Math.floor(mi / 12), m = mi % 12 + 1;
+  return f === 1 ? y : (m >= f ? y + 1 : y);
+}
+const fyLabel = y => (num(state.settings.fyStart) || 1) === 1 ? String(y) : "FY" + String(y).slice(2);
+
+/* ---------- funding composition (pie charts) ---------- */
+let pieGroup = (() => { try { return localStorage.getItem("labRunway.pieGroup") || "type"; } catch (e) { return "type"; } })();
+let pieYear = null;
+let pieCum = (() => { try { return localStorage.getItem("labRunway.pieCum") === "1"; } catch (e) { return false; } })();
+const TYPE_COLORS = {"Grant":PALETTE[1], "Fellowship":PALETTE[8], "Contract":PALETTE[7], "Startup":PALETTE[0], "Internal":PALETTE[5], "Gift or endowment":PALETTE[4], "Departmental support":PALETTE[6]};
+// Spending entered as "spent so far" that the plan's costs don't account for (e.g. past costs never added to the app),
+// spread evenly over the grant's past months so history and balances still reflect it.
+function unitemised(P, G, PA) {
+  if (G.auto || G.s >= P.S) return null;
+  const pS = P.S - PA.past, PG = PA.PP ? PA.PP.gm[G.g.id] : null;
+  let plan = 0;
+  for (let mi = G.s; mi < Math.min(P.S, G.e + 1); mi++) { const k = mi - pS; if (PG && k >= 0 && k < PG.spend.length) plan += PG.spend[k]; }
+  const extra = G.spentEff - plan;
+  const m0 = Math.max(G.s, pS), m1 = Math.min(P.S - 1, G.e), n = m1 - m0 + 1;
+  if (extra <= 0.5 || n <= 0) return null;
+  return {from: m0, to: m1, per: extra / n, total: extra};
+}
+function compData(P) {
+  const PA = pastRun(P, "all"), {past, PP} = PA, H0 = P.S - past;
+  const pad = () => new Array(past).fill(0);
+  let unit = 0;
+  const series = P.gs.filter(G => G.on).map(G => {
+    const arr = (PP && PP.gm[G.g.id] ? PP.gm[G.g.id].dir.slice(0, past) : pad()).concat(G.dir);
+    const u = unitemised(P, G, PA);
+    if (u) { for (let mi = u.from; mi <= u.to; mi++) { const j = mi - H0; if (j >= 0 && j < past) arr[j] += u.per; } unit += u.total; }
+    return {g:G.g, arr};
+  });
+  const gap = (PP ? PP.unfunded.slice(0, past) : pad()).concat(P.unfunded);
+  return {past, H0, series, gap, unit};
+}
+function compSlices(D, from, to) {
+  const funders = [...new Set(state.grants.map(g => g.funder || "Unspecified funder"))].sort();
+  const agg = new Map();
+  for (const sr of D.series) {
+    let v = 0; for (let j = from; j < to; j++) v += sr.arr[j] || 0;
+    if (v < 0.5) continue;
+    const g = sr.g;
+    const k = pieGroup === "type" ? (g.type || "Grant") : pieGroup === "funder" ? (g.funder || "Unspecified funder") : g.name;
+    const c = pieGroup === "type" ? (TYPE_COLORS[k] || "#888") : pieGroup === "funder" ? PALETTE[funders.indexOf(k) % PALETTE.length] : g.color;
+    const cur = agg.get(k) || {k, v:0, c}; cur.v += v; agg.set(k, cur);
+  }
+  const out = [...agg.values()].sort((a, b) => b.v - a.v);
+  let gv = 0; for (let j = from; j < to; j++) gv += D.gap[j] || 0;
+  if (gv > 0.5) out.push({k:"No funding source", v:gv, c:"var(--bad)"});
+  return out;
+}
+function donutSVG(sl, line1, line2) {
+  const tot = sl.reduce((a, x) => a + x.v, 0), R = 80, r = 52, c = 90;
+  if (tot <= 0) return `<svg viewBox="0 0 180 180" class="donut"><circle cx="90" cy="90" r="66" fill="none" stroke="var(--line)" stroke-width="28"/><text x="90" y="94" text-anchor="middle" font-size="12" fill="var(--muted)">No spending</text></svg>`;
+  const pt = (rad, ang) => (c + rad * Math.cos(ang)).toFixed(2) + " " + (c + rad * Math.sin(ang)).toFixed(2);
+  let a0 = -Math.PI / 2, out = "";
+  sl.forEach(x => {
+    const frac = x.v / tot, t = `<title>${esc(x.k)}: ${esc(fmt(x.v))} (${Math.round(frac * 100)}%)</title>`;
+    if (frac > 0.9999) { out += `<circle cx="${c}" cy="${c}" r="${(R + r) / 2}" fill="none" stroke="${x.c}" stroke-width="${R - r}">${t}</circle>`; return; }
+    const a1 = a0 + frac * 2 * Math.PI, lg = frac > 0.5 ? 1 : 0;
+    out += `<path d="M${pt(R, a0)}A${R} ${R} 0 ${lg} 1 ${pt(R, a1)}L${pt(r, a1)}A${r} ${r} 0 ${lg} 0 ${pt(r, a0)}Z" fill="${x.c}" stroke="var(--surface)" stroke-width="1.5">${t}</path>`;
+    a0 = a1;
+  });
+  return `<svg viewBox="0 0 180 180" class="donut" role="img" aria-label="${esc(line2)}">${out}<text x="90" y="89" text-anchor="middle" font-size="18" font-weight="700" fill="var(--ink)" font-family="var(--display)">${esc(line1)}</text><text x="90" y="107" text-anchor="middle" font-size="11" fill="var(--muted)">${esc(line2)}</text></svg>`;
+}
+function pieLegend(sl) {
+  const tot = sl.reduce((a, x) => a + x.v, 0) || 1;
+  return `<div class="pleg">${sl.map(x => `<div><i style="background:${x.c}"></i><span>${esc(x.k)}</span><b>${Math.round(x.v / tot * 100)}%</b><span class="muted">${fmtc(x.v)}</span></div>`).join("") || `<p class="muted">Nothing in this period.</p>`}</div>`;
+}
+function compositionPanel(P) {
+  const D = compData(P), cur0 = D.past, cur1 = D.past + Math.min(12, P.N);
+  const curSl = compSlices(D, cur0, cur1), curTot = curSl.reduce((a, x) => a + x.v, 0);
+  // historical: one entry per (fiscal) year, past months only
+  const years = [];
+  for (let j = 0; j < D.past; j++) { const y = fyOf(D.H0 + j); let e = years[years.length - 1]; if (!e || e.y !== y) { e = {y, from:j, to:j}; years.push(e); } e.to = j + 1; }
+  const curFy = fyOf(P.S);
+  years.forEach(e => { e.sl = compSlices(D, pieCum ? 0 : e.from, e.to); e.tot = e.sl.reduce((a, x) => a + x.v, 0); e.label = (pieCum && e.y !== years[0].y ? fyLabel(years[0].y) + " – " : "") + fyLabel(e.y) + (e.y === curFy ? " to date" : "") + (pieCum ? ", cumulative" : ""); });
+  if (pieYear == null || !years.some(e => e.y === pieYear)) { const prev = years.filter(e => e.y < curFy); pieYear = (prev.length ? prev[prev.length - 1] : years[years.length - 1] || {}).y ?? null; }
+  const sel = years.find(e => e.y === pieYear);
+  const yb = years.map(e => `<button class="yb" data-pyear="${e.y}" aria-pressed="${e.y === pieYear}" title="${esc(e.label)}: ${esc(fmt(e.tot))}"><span class="bar">${e.sl.map(x => `<i style="background:${x.c};flex:${(x.v / (e.tot || 1)).toFixed(4)}"></i>`).join("")}</span>${esc(fyLabel(e.y))}</button>`).join("");
+  const opts = [["type","Type"],["funder","Funding agency"],["grant","Grant"]];
+  return `<section class="panel">
+    <div class="row"><div><h2>Funding composition</h2><p class="hint" style="margin:0">Who pays for your lab’s direct costs. Indirect costs aren’t included.</p></div><span class="spacer"></span>
+      <label class="muted" style="font-size:.82rem;display:flex;gap:6px;align-items:center">Group by <select id="pGroup" class="txt" style="padding:3px 6px;font-size:.84rem">${opts.map(([v, t]) => `<option value="${v}" ${v === pieGroup ? "selected" : ""}>${t}</option>`).join("")}</select></label></div>
+    <div class="comp">
+      <div><h3>Current</h3><p class="hint" style="margin:2px 0 10px">Next 12 months, ${lbl(P.S)} – ${lbl(P.S + Math.min(12, P.N) - 1)}</p>
+        <div class="pie">${donutSVG(curSl, fmtc(curTot), "next 12 months")}${pieLegend(curSl)}</div></div>
+      <div><div class="row"><h3>Historical</h3><span class="spacer"></span><span class="seg"><button data-pcum="0" aria-pressed="${!pieCum}">Single year</button><button data-pcum="1" aria-pressed="${pieCum}">Cumulative</button></span></div>
+        ${sel ? `<p class="hint" style="margin:2px 0 10px">${esc(sel.label)}, from your plan’s dates and funding splits${D.unit > 0.5 ? `, plus ${fmt(D.unit)} of spending entered on the Support page that isn’t tied to any cost, spread evenly over each grant’s past months` : ""}</p>
+        <div class="pie">${donutSVG(sel.sl, fmtc(sel.tot), pieCum ? "cumulative" : sel.label)}${pieLegend(sel.sl)}</div>
+        <div class="yearbars">${yb}</div>
+        ${years.length > 1 ? `<input type="range" id="pYear" min="0" max="${years.length - 1}" value="${years.indexOf(sel)}" style="width:100%;margin-top:6px" aria-label="Year">` : ""}`
+        : `<p class="hint" style="margin:2px 0 10px">No past months yet. Costs and grants with start dates before ${lbl(P.S)} appear here.</p>`}
+      </div>
+    </div>
+  </section>`;
+}
+function grantsView(P) {
+  let lastT = null;
+  const rows = sortGs(P.gs).map(G => {
+    let pre = "";
+    if (grantSort === "type" && gT(G) !== lastT) { lastT = gT(G); pre = `<tr><td colspan="9" style="padding-top:16px;font-weight:700;color:var(--muted);font-size:.8rem">${esc(lastT)}</td></tr>`; }
+    const g = G.g;
+    const lastK = Math.min(P.N - 1, G.e - P.S);
+    const endBal = lastK >= 0 ? G.bal[lastK] : G.avail;
+    const kNeg = G.bal.findIndex(b => b < -0.5);
+    return pre + `<tr class="click" data-grant="${esc(g.id)}">
+      <td><i class="sw" style="background:${esc(g.color)}"></i>${esc(g.name)}<br><small class="muted">${esc(g.funder || "")}</small>${g.chartString ? `<br><small class="mono muted" title="Chart string">${esc(g.chartString)}</small>` : ""}</td>
+      <td>${g.status === "pending" ? `<span class="tag pending">Pending · ${num(g.prob)}%</span>` : `<span class="tag">${esc(g.type || "Grant")}</span>`}${G.unl ? `<br><small class="muted">no balance tracked</small>` : ""}</td>
+      <td style="white-space:nowrap">${validM(g.start) ? lbl(toIdx(g.start)) : "—"} – ${validM(g.end) ? lbl(toIdx(g.end)) : (G.unl ? "ongoing" : "—")}</td>
+      <td style="white-space:nowrap">${!G.unl && num(g.idcRate) && g.idcBase !== "none" ? `${num(g.idcRate)}% ${BASE_LBL[g.idcBase]}<br><small class="muted">${g.awardBasis === "total" ? "within award" : "on top of award"} · ${fmt(G.idc.reduce((a, b) => a + b, 0))}</small>` : `<span class="muted">None</span>`}</td>
+      ${G.unl ? `<td class="num muted">${esc(fellowDesc(g) || "Ongoing")}</td><td class="num">${fmt(G.spentEff)}<br><small class="muted">received${G.auto ? " · from plan" : ""}</small></td><td class="num muted">—</td>
+      <td class="num">${G.on ? fmt(G.dir.reduce((a, b) => a + b, 0)) : "not counted"}<br><small class="muted">projected support</small></td><td class="num muted">—</td></tr>` : `<td class="num">${fmt(num(g.amount))}</td>
+      <td class="num">${fmt(G.spentEff)}${G.auto && G.spentEff > 0.5 ? `<br><small class="muted">from plan</small>` : ""}</td>
+      <td class="num">${fmt(G.avail)}</td>
+      <td class="num ${!G.on ? "muted" : endBal < -0.5 ? "neg" : endBal > Math.max(1000, .02 * num(g.amount)) ? "warnc" : ""}">${G.on ? fmt(endBal) : "not counted"}</td>
+      <td class="num ${kNeg >= 0 && G.on ? "neg" : "muted"}">${G.on && kNeg >= 0 ? lbl(P.S + kNeg) : "—"}</td></tr>`}`;
+  }).join("");
+  // fiscal-year matrix
+  const {past, PP} = pastRun(P), H0 = P.S - past, TT = past + P.N;
+  const cat = (a, b) => (b ? b.slice(0, past) : []).concat(a);
+  const fys = [...new Set(Array.from({length:TT}, (_, j) => fyOf(H0 + j)))];
+  const curFy = fyOf(P.S);
+  const fyCls = y => y < curFy ? " pastcol" : y === curFy && past ? " nowcol" : "";
+  const byFy = arr => fys.map(y => arr.reduce((s, v, j) => s + (fyOf(H0 + j) === y ? v : 0), 0));
+  const mrow = (name, vals, cls = "") => `<tr><td class="${cls}">${name}</td>${vals.map((v, i) => `<td class="num ${cls}${fyCls(fys[i])}">${v > 0.5 ? fmt(v) : "—"}</td>`).join("")}</tr>`;
+  let matrix = "", curT = null, sub = null;
+  const flush = () => { if (sub) matrix += mrow(`Subtotal — ${esc(curT)}`, sub, "muted"); };
+  sortGs(P.gs).filter(G => G.on).forEach(G => {
+    const vals = byFy(cat(G.dir, PP && PP.gm[G.g.id] ? PP.gm[G.g.id].dir : null));
+    if (grantSort === "type" && gT(G) !== curT) { flush(); curT = gT(G); sub = vals.map(() => 0); matrix += `<tr><td colspan="${fys.length + 1}" style="font-weight:700;color:var(--muted);font-size:.8rem;padding-top:14px">${esc(curT)}</td></tr>`; }
+    if (sub) vals.forEach((v, i) => sub[i] += v);
+    matrix += mrow(`<i class="sw" style="background:${esc(G.g.color)}"></i>${esc(G.g.name)}`, vals);
+  });
+  flush();
+  matrix += mrow("No funding source", byFy(cat(P.unfunded, PP && PP.unfunded)), "neg");
+  matrix += mrow("Indirect costs (all grants)", byFy(cat(P.idcAll, PP && PP.idcAll)), "muted");
+  const totA = cat(P.total, PP && PP.total), idcA = cat(P.idcAll, PP && PP.idcAll);
+  const tot = byFy(totA), totI = byFy(totA.map((v, j) => v + idcA[j]));
+  return `${mapView(P, "grants")}
+  <section class="panel">
+    <div class="row"><div><h2>Support</h2><p class="hint" style="margin:0">Grants, startup packages, gifts, internal funds and other support. Ongoing sources such as departmental TA support pay their share without a balance to track. Fellowships are added from a person’s cost on the Costs page. Click a row to see how its money is spent over time.</p></div><span class="spacer"></span><label class="muted" style="font-size:.82rem;display:flex;gap:6px;align-items:center">Sort by <select id="gSort" class="txt" style="padding:3px 6px;font-size:.84rem">${[["added","Order added"],["type","Type"],["end","End date"],["name","Name"]].map(([v, t]) => `<option value="${v}" ${v === grantSort ? "selected" : ""}>${t}</option>`).join("")}</select></label><button class="btn primary" id="gAdd">Add grant</button></div>
+    <div class="tbl-wrap" style="margin-top:12px"><table class="data">
+      <thead><tr><th>Name</th><th>Type</th><th>Period</th><th>Indirect</th><th class="num">Award</th><th class="num">Spent so far</th><th class="num">Available</th><th class="num">Balance at end</th><th class="num">Runs out</th></tr></thead>
+      <tbody>${rows || `<tr><td colspan="9" class="muted">No grants yet. Add one to start projecting.</td></tr>`}</tbody></table></div>
+    <p class="hint" style="margin-top:10px">“Spent so far” marked “from plan” is worked out from your costs because none was entered; enter the figure from your grant statement to override it. “Balance at end” is the projected balance when the grant ends, or at the end of the projection if that comes first. Amber means money likely left unspent. Indirect costs reduce the balance only when the award includes them; the amount shown is projected over the projection window.</p>
+  </section>
+  ${compositionPanel(P)}
+  <section class="panel">
+    <div class="row"><h2>Spending by ${(num(state.settings.fyStart) || 1) === 1 ? "year" : "fiscal year"}</h2><span class="spacer"></span>
+      <span class="muted" style="font-size:.82rem">Show past</span><span class="seg">${[[0,"Off"],[12,"1 yr"],[24,"2 yrs"],["all","All"]].map(([v, t]) => `<button data-span="${v}" aria-pressed="${String(v) === String(histSpan)}">${t}</button>`).join("")}</span></div>
+    <p class="hint">Direct charges to each grant, with indirect costs on their own row. ${past ? `Faded years before ${fyLabel(curFy)} are filled in from your plan’s dates and funding splits, and the current year combines those months with the projection. Scroll left to go further back. ` : ""}Change the fiscal year start in Setup.</p>
+    <div class="tbl-wrap" id="fywrap"><table class="data"><thead><tr><th></th>${fys.map(y => `<th class="num${fyCls(y)}">${fyLabel(y)}${y === curFy && past ? "<br><small>now</small>" : ""}</th>`).join("")}</tr></thead>
+    <tbody>${matrix}</tbody><tfoot><tr><td>Direct costs</td>${tot.map((v, i) => `<td class="num${fyCls(fys[i])}">${fmt(v)}</td>`).join("")}</tr><tr><td>Total incl. indirect</td>${totI.map((v, i) => `<td class="num${fyCls(fys[i])}">${fmt(v)}</td>`).join("")}</tr></tfoot></table></div>
+  </section>`;
+}
+
+// A monthly cost's amount as of today (or, when viewing an old version, as of that version's projection start), with annual raises applied.
+function curAmount(e) {
+  const ref = viewing ? toIdx(state.settings.start) : toIdx(nowM());
+  const es = validM(e.start) ? toIdx(e.start) : ref, ee = validM(e.end) ? toIdx(e.end) : Math.max(ref, es);
+  const at = Math.min(Math.max(ref, es), ee);
+  const cur = num(e.amount) * Math.pow(1 + num(e.raise) / 100, Math.floor((at - es) / 12));
+  return {cur, es, ee, when: ref < es ? "starting" : ref > ee ? "final" : "current"};
+}
+function amountCell(e) {
+  const base = num(e.amount), fr = num(e.fringe) ? ` + ${num(e.fringe)}% fringe` : "";
+  if (e.kind === "once") return `${fmt(base)}<br><small class="muted">one-time${fr}</small>`;
+  const {cur, es, ee, when} = curAmount(e), pers = (e.category || "") === "Personnel";
+  let sub = pers ? `${when} salary per month · ${fmt(cur * 12)}/yr${fr}` : `${num(e.raise) ? when + " " : ""}per month${fr}`;
+  if (when === "starting") sub += `<br>from ${lbl(es)}`;
+  if (when === "final") sub += `<br>ended ${lbl(ee)}`;
+  if (Math.abs(cur - base) > 0.5) sub += `<br>${fmt(base)} at start, +${num(e.raise)}%/yr`;
+  return `${fmt(cur)}<br><small class="muted">${sub}</small>`;
+}
+const ROLES = ["Graduate Student","Postdoc","Associate Research Scholar","Research Staff","Undergraduate","Other"];
+let costFilter = (() => { try { return localStorage.getItem("labRunway.costFilter") || "all"; } catch (e) { return "all"; } })();
+// current / past / upcoming, judged against today (or, when viewing an old version, that version's projection start)
+function costStatus(e) {
+  const ref = viewing ? toIdx(state.settings.start) : toIdx(nowM());
+  const s0 = validM(e.start) ? toIdx(e.start) : ref, e0 = e.kind === "once" ? s0 : (validM(e.end) ? toIdx(e.end) : ref);
+  return ref < s0 ? "upcoming" : ref > e0 ? "past" : "current";
+}
+function statusTag(e) {
+  const st = costStatus(e), pers = e.category === "Personnel";
+  if (st === "current") return pers ? `<span class="tag st-cur">Current</span>` : "";
+  if (st === "past") return `<span class="tag">${pers ? "Past" : e.kind === "once" ? "Done" : "Ended"}</span>`;
+  return `<span class="tag st-up">Starts ${lbl(toIdx(e.start))}</span>`;
+}
+function costsView(P) {
+  const shown = P.rows.filter(r => costFilter === "all" || costStatus(r.ex) === costFilter);
+  const counts = {all:P.rows.length, current:0, past:0, upcoming:0}; P.rows.forEach(r => counts[costStatus(r.ex)]++);
+  const rows = shown.map(r => {
+    const e = r.ex;
+    const chips = (e.alloc || []).map(a => { const g = gById(a.grantId); return `<span class="chip"><i style="background:${g ? esc(g.color) : "var(--bad)"}"></i>${g ? esc(g.name) : "Removed grant"} ${esc(allocAmt(a, g))}${validM(a.start) || validM(a.end) ? ` <span class="muted">${validM(a.start) ? lbl(toIdx(a.start)) : "…"}–${validM(a.end) ? lbl(toIdx(a.end)) : "…"}</span>` : ""}</span>`; }).join("") || `<span class="muted">Not assigned</span>`;
+    return `<tr class="click" data-exp="${esc(e.id)}">
+      <td>${esc(e.name)} ${statusTag(e)}<br><small class="muted">${e.category === "Personnel" && e.role ? esc(e.role) : esc(e.category || "Other")}${isExempt(e) ? " · excluded from MTDC base" : ""}</small></td>
+      <td style="white-space:nowrap">${e.kind === "once" ? (validM(e.start) ? lbl(toIdx(e.start)) : "—") : `${validM(e.start) ? lbl(toIdx(e.start)) : "—"} – ${validM(e.end) ? lbl(toIdx(e.end)) : "—"}`}</td>
+      <td class="num">${amountCell(e)}</td>
+      <td>${chips}</td>
+      <td class="num">${fmt(r.horizonCost)}${r.idcTot > 0.5 ? `<br><small class="muted">+ ${fmt(r.idcTot)} indirect</small>` : ""}</td>
+      <td class="num ${r.gap > 0.5 ? "neg" : "muted"}">${r.gap > 0.5 ? fmt(r.gap) : "—"}</td></tr>`;
+  }).join("");
+  const tc = shown.reduce((s, r) => s + r.horizonCost, 0), tg = shown.reduce((s, r) => s + r.gap, 0);
+  const fopts = [["all","All"],["current","Current"],["past","Past"],["upcoming","Upcoming"]];
+  return `${mapView(P, "costs")}
+  <section class="panel">
+    <div class="row"><div><h2>Costs</h2><p class="hint" style="margin:0">People, supplies, equipment and anything else you plan to pay for. Click a row to edit or reassign it.</p></div><span class="spacer"></span><span class="seg" role="group" aria-label="Show">${fopts.map(([v, t]) => `<button data-cf="${v}" aria-pressed="${v === costFilter}">${t} <span class="muted">${counts[v]}</span></button>`).join("")}</span><button class="btn primary" id="cAdd">Add cost</button></div>
+    <div class="tbl-wrap" style="margin-top:12px"><table class="data">
+      <thead><tr><th>Cost</th><th>When</th><th class="num">Amount</th><th>Paid by</th><th class="num">Total in projection</th><th class="num">No source</th></tr></thead>
+      <tbody>${rows || `<tr><td colspan="6" class="muted">${P.rows.length ? "No costs match this filter." : "No costs yet. Add salaries, stipends, supplies or equipment."}</td></tr>`}</tbody>
+      ${rows ? `<tfoot><tr><td colspan="4">Total</td><td class="num">${fmt(tc)}</td><td class="num ${tg > 0.5 ? "neg" : ""}">${tg > 0.5 ? fmt(tg) : "—"}</td></tr></tfoot>` : ""}
+    </table></div>
+    <p class="hint" style="margin-top:10px">Totals are direct costs, including fringe and annual raises; indirect costs are shown underneath. Raises are counted from each cost’s start date; totals cover the projection window. Current, past and upcoming are judged against today’s date.</p>
+  </section>`;
+}
+
+function historyView() {
+  const sorted = [...histIndex].sort((a, b) => a.ts - b.ts), list = [...sorted].reverse();
+  return `<section class="panel">
+    <h2>History</h2>
+    <p class="hint">A version is saved automatically on each day you make changes. Save a named version before big decisions, like a new hire or a resubmission. Rolling the projection forward and restoring an old version also save a version first.</p>
+    ${viewing ? `<p class="muted">Return to today to save a new version.</p>` : `<div class="row"><input class="txt" id="hNote" maxlength="120" placeholder="Name this version, e.g. Before hiring a second postdoc" style="flex:1;min-width:220px"><button class="btn primary" id="hSave">Save version</button></div>`}
+    <p class="err" id="hMsg"></p>
+  </section>
+  ${sorted.length ? `<section class="panel">
+    <h2>Scroll back in time</h2>
+    <p class="hint">Drag to see each grant’s available balance as recorded in each version, and how it changed from the version before.</p>
+    <input type="range" id="hSlider" min="0" max="${sorted.length - 1}" value="${sorted.length - 1}" style="width:100%" aria-label="Version">
+    <div id="hPeek"></div>
+  </section>
+  <section class="panel">
+    <h2>All versions</h2>
+    <div class="tbl-wrap"><table class="data"><thead><tr><th>Saved</th><th>Version</th><th>Balances as of</th><th class="num">Available (awarded)</th><th></th></tr></thead>
+    <tbody>${list.map(h => `<tr><td style="white-space:nowrap">${esc(fmtDate(h.ts))}</td><td>${vLabel(h)}</td><td>${validM(h.asOf) ? lbl(toIdx(h.asOf)) : "—"}</td><td class="num">${fmt(totalAvail(h))}</td><td class="num"><button class="btn small" data-view="${esc(h.sid)}">${viewing && viewing.sid === h.sid ? "Viewing" : "View"}</button></td></tr>`).join("")}</tbody></table></div>
+  </section>` : `<section class="panel"><p class="muted" style="margin:0">No versions yet. One is saved automatically the next time you change something.</p></section>`}`;
+}
+function bindHistory() {
+  const sorted = [...histIndex].sort((a, b) => a.ts - b.ts);
+  const hs = $("#hSave");
+  if (hs) hs.onclick = async () => { hs.disabled = true; await recordSnapshot("manual", $("#hNote").value.trim() || "Saved version"); };
+  document.querySelectorAll("[data-view]").forEach(b => b.onclick = () => viewSnapshot(b.dataset.view));
+  const sl = $("#hSlider"); if (!sl) return;
+  const peek = () => {
+    const i = +sl.value, h = sorted[i], prev = sorted[i - 1];
+    const rows = Object.entries(h.bal || {}).map(([id, v]) => {
+      const pv = prev && prev.bal && prev.bal[id] ? prev.bal[id][2] : null, dlt = pv == null ? null : v[2] - pv;
+      return `<tr><td><i class="sw" style="background:${esc(v[1])}"></i>${esc(v[0])}${v[3] === "pending" ? ' <span class="tag pending">pending</span>' : ""}</td><td class="num">${fmt(v[2])}</td><td class="num ${dlt == null ? "muted" : dlt < -0.5 ? "neg" : ""}">${dlt == null ? "new" : Math.abs(dlt) < 0.5 ? "—" : (dlt > 0 ? "+" : "−") + fmt(Math.abs(dlt))}</td></tr>`;
+    }).join("");
+    $("#hPeek").innerHTML = `<div class="peek-h"><b>${esc(fmtDate(h.ts))}</b><span class="muted">${vLabel(h)} · balances as of ${validM(h.asOf) ? lbl(toIdx(h.asOf)) : "—"}</span><span class="spacer"></span><button class="btn small" id="hView">View this version in full</button></div>
+      <div class="tbl-wrap"><table class="data"><thead><tr><th>Grant</th><th class="num">Available</th><th class="num">Change from previous version</th></tr></thead><tbody>${rows || `<tr><td colspan="3" class="muted">No grants in this version.</td></tr>`}</tbody></table></div>`;
+    $("#hView").onclick = () => viewSnapshot(h.sid);
+  };
+  sl.oninput = peek; peek();
+}
+function setupView() {
+  const s = state.settings;
+  const cur = ["USD","EUR","GBP","CHF","CAD","AUD","DKK","SEK","NOK","JPY","CNY","INR","SGD","NZD"];
+  return `<section class="panel" style="max-width:720px">
+    <h2>Lab setup</h2><p class="hint">These settings apply to the whole projection.</p>
+    <div class="grid2">
+      <label class="f full">Lab name<input id="sName" value="${esc(s.labName)}"></label>
+      <label class="f">Currency<select id="sCur">${cur.map(c => `<option ${c === s.currency ? "selected" : ""}>${c}</option>`).join("")}</select></label>
+      <label class="f">Fiscal year starts in<select id="sFy">${MN.map((m, i) => `<option value="${i + 1}" ${i + 1 === num(s.fyStart) ? "selected" : ""}>${m}</option>`).join("")}</select></label>
+      <label class="f">Project from (month)<input id="sStart" type="month" placeholder="YYYY-MM" value="${esc(s.start)}"></label>
+      <label class="f">Years to project<input id="sYears" type="number" min="1" max="15" step="1" value="${esc(s.years)}"></label>
+      <label class="f">Default indirect rate for new grants (%)<input id="sIdc" type="number" min="0" step="any" value="${esc(s.defaultIdc)}"></label>
+      <label class="f">Default indirect base<select id="sIdcBase"><option value="mtdc" ${s.defaultIdcBase !== "tdc" ? "selected" : ""}>MTDC</option><option value="tdc" ${s.defaultIdcBase === "tdc" ? "selected" : ""}>TDC</option></select></label>
+    </div>
+    <p class="err" id="sErr"></p>
+    <div class="row"><button class="btn primary" id="sSave">Save settings</button><button class="btn" id="sToday">Project from this month</button></div>
+  </section>
+  <section class="panel" style="max-width:720px">
+    <h2>Back up and share</h2>
+    <p class="hint">Your lab is saved automatically. Export a backup to move it elsewhere, or a spreadsheet of the monthly projection for your grants office.</p>
+    <div class="row">
+      <button class="btn" id="xJson" hidden>Export backup (.json)</button>
+      <button class="btn" id="xCsv" hidden>Export projection (.csv)</button>
+      <label class="btn" style="display:inline-block">Import backup<input type="file" id="xImport" accept=".json,application/json" hidden></label>
+    </div>
+    <p class="err" id="xMsg"></p>
+  </section>
+  <section class="panel" style="max-width:720px">
+    <h2>Start over</h2>
+    <p class="hint">Load the example lab to try things out, or clear everything. Both replace your current data; a version is saved in History first so you can restore it.</p>
+    <div class="row"><button class="btn" id="zExample">Load example lab</button><button class="btn danger" id="zClear">Clear everything</button></div>
+    <p class="hint" id="zMsg" style="margin:10px 0 0"></p>
+  </section>`;
+}
+
+/* ---------- binding ---------- */
+function bind(r, P) {
+  if (r === "overview") bindChart(P);
+  if (!viewing) {
+    document.querySelectorAll("[data-grant]").forEach(el => el.onclick = () => showGrant(el.dataset.grant));
+    document.querySelectorAll("[data-exp]").forEach(el => el.onclick = () => editExpense(el.dataset.exp));
+  }
+  const on = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
+  on("gAdd", () => editGrant(null)); on("mAddGrant", () => editGrant(null));
+  const gsel = $("#gSort"); if (gsel) gsel.onchange = () => { grantSort = gsel.value; try { localStorage.setItem("labRunway.grantSort", grantSort); } catch (e) {} render(); };
+  on("cAdd", () => editExpense(null)); on("mAddCost", () => editExpense(null));
+  document.querySelectorAll("[data-cf]").forEach(b => b.onclick = () => { costFilter = b.dataset.cf; try { localStorage.setItem("labRunway.costFilter", costFilter); } catch (e) {} render(); });
+  if (r === "setup" && !viewing) bindSetup();
+  if (r === "history") bindHistory();
+  if (r === "map" || r === "grants" || r === "costs") {
+    const applyCollapse = () => {
+      try { localStorage.setItem("labRunway.mapCollapsed", JSON.stringify([...mapCollapsed])); } catch (e) {}
+      document.querySelectorAll("#mapwrap [data-gk]").forEach(b => b.setAttribute("aria-expanded", String(!mapCollapsed.has(b.dataset.gk))));
+      document.querySelectorAll("#mapwrap tr[data-in]").forEach(tr => { tr.hidden = tr.dataset.in.split("|").some(k => mapCollapsed.has(k)); });
+    };
+    document.querySelectorAll("#mapwrap [data-gk]").forEach(b => b.onclick = ev => { ev.stopPropagation(); const k = b.dataset.gk; mapCollapsed.has(k) ? mapCollapsed.delete(k) : mapCollapsed.add(k); applyCollapse(); });
+    document.querySelectorAll("[data-gall]").forEach(b => b.onclick = () => { const ks = [...document.querySelectorAll("#mapwrap [data-gk]")].map(x => x.dataset.gk); ks.forEach(k => b.dataset.gall === "collapse" ? mapCollapsed.add(k) : mapCollapsed.delete(k)); applyCollapse(); });
+    const mg = $("#mGroup"); if (mg) mg.onchange = () => { mapGroup = mg.value; try { localStorage.setItem("labRunway.mapGroup", mapGroup); } catch (e) {} render(); };
+    const sg = $("#sGroup"); if (sg) sg.onchange = () => { supGroup = sg.value; try { localStorage.setItem("labRunway.supGroup", supGroup); } catch (e) {} render(); };
+    const w = $("#mapwrap"), th = w && w.querySelector("th.projstart"), lab = w && w.querySelector("th.lab");
+    if (th) w.scrollLeft = Math.max(0, th.offsetLeft - (lab ? lab.offsetWidth : 200) - 6 * 16);
+  }
+  if (r === "grants") {
+    const pg = $("#pGroup"); if (pg) pg.onchange = () => { pieGroup = pg.value; try { localStorage.setItem("labRunway.pieGroup", pieGroup); } catch (e) {} render(); };
+    document.querySelectorAll("[data-pcum]").forEach(b => b.onclick = () => { pieCum = b.dataset.pcum === "1"; try { localStorage.setItem("labRunway.pieCum", pieCum ? "1" : "0"); } catch (e) {} render(); });
+    document.querySelectorAll("[data-pyear]").forEach(b => b.onclick = () => { pieYear = +b.dataset.pyear; render(); });
+    const py = $("#pYear"); if (py) py.oninput = () => { const bs = document.querySelectorAll("[data-pyear]"); const b = bs[+py.value]; if (b) { pieYear = +b.dataset.pyear; render(); const n = $("#pYear"); if (n) n.focus(); } };
+    const w = $("#fywrap"), th = w && w.querySelector("th.nowcol"), first = w && w.querySelector("th");
+    if (th) w.scrollLeft = Math.max(0, th.offsetLeft - (first ? first.offsetWidth : 200) - 2 * th.offsetWidth);
+  }
+  if (r === "overview" || r === "map" || r === "grants" || r === "costs") {
+    const rb = $("#oRoll"); if (rb) confirmBtn(rb, "Click again to roll forward", rollForward);
+    const op = $("#oPending"); if (op) op.onchange = () => { state.settings.includePending = op.checked; commit(); };
+    document.querySelectorAll("[data-span]").forEach(b => b.onclick = () => {
+      histSpan = b.dataset.span === "all" ? "all" : +b.dataset.span;
+      try { localStorage.setItem("labRunway.span", String(histSpan)); } catch (e) {}
+      render();
+    });
+  }
+}
+function confirmBtn(btn, label, fn) {
+  btn.onclick = () => {
+    if (btn.dataset.armed) { fn(); return; }
+    btn.dataset.armed = "1"; const old = btn.textContent; btn.textContent = label;
+    setTimeout(() => { if (btn.isConnected) { delete btn.dataset.armed; btn.textContent = old; } }, 3500);
+  };
+}
+async function bindSetup() {
+  $("#sToday").onclick = () => { $("#sStart").value = nowM(); };
+  $("#sSave").onclick = () => {
+    const start = $("#sStart").value.trim(), years = Math.round(num($("#sYears").value));
+    if (!validM(start)) { $("#sErr").textContent = "Enter the start month as YYYY-MM, for example 2026-11."; return; }
+    if (years < 1 || years > 15) { $("#sErr").textContent = "Choose between 1 and 15 years."; return; }
+    Object.assign(state.settings, {labName: $("#sName").value.trim() || "My lab", currency: $("#sCur").value, fyStart: num($("#sFy").value), start, years, defaultIdc: Math.max(0, num($("#sIdc").value)), defaultIdcBase: $("#sIdcBase").value});
+    commit(); $("#sErr").textContent = "";
+  };
+  confirmBtn($("#zExample"), "Click again to replace your data", async () => { await loadExample(); location.hash = "overview"; });
+  confirmBtn($("#zClear"), "Click again to delete everything", async () => { if (state.exampleId) { removeExampleHistory(); await writeHistory(); } else if (hasData(state)) await recordSnapshot("manual", "Before clearing everything"); state = blank(); commit(); const zm = $("#zMsg"); if (zm) zm.textContent = "Everything was cleared. You can still export, import a backup, or restore an earlier version from History."; });
+  $("#xImport").onchange = async ev => {
+    const f = ev.target.files[0]; if (!f) return;
+    try {
+      const obj = JSON.parse(await f.text());
+      if (!obj || !Array.isArray(obj.grants) || !Array.isArray(obj.expenses)) throw new Error();
+      if (state.exampleId) { removeExampleHistory(); await writeHistory(); } else if (hasData(state)) await recordSnapshot("manual", "Before importing a backup");
+      state = sanitize(obj); commit(); $("#xMsg").textContent = "";
+    } catch (e) { $("#xMsg").textContent = "That file isn’t a Lab Runway backup. Choose a .json file exported from this page."; }
+  };
+  $("#xJson").hidden = false; $("#xCsv").hidden = false;
+  const doSave = async (filename, data) => {
+    const msg = $("#xMsg"); msg.className = "err"; msg.textContent = "";
+    const dl = await dlReady;
+    if (dl) {
+      try { await dl.save({filename, data}); return; }
+      catch (e) { if (e && e.code === "declined") return; }
+    }
+    msg.className = "hint";
+    msg.innerHTML = `The download couldn’t start here, so the contents are below. Copy them into a file named <b>${esc(filename)}</b>.<textarea readonly rows="8" style="width:100%;margin-top:8px;font-family:ui-monospace,Menlo,monospace;font-size:.8rem;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:6px">${esc(data)}</textarea>`;
+  };
+  const slug = (state.settings.labName || "lab").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "lab";
+  $("#xJson").onclick = () => doSave(`${slug}-lab-runway-backup.json`, JSON.stringify(state, null, 2));
+  $("#xCsv").onclick = () => doSave(`${slug}-projection.csv`, projectionCSV(project(state)));
+}
+function projectionCSV(P) {
+  const q = v => `"${String(v).replace(/"/g, '""')}"`;
+  const head = ["Month", ...P.gs.filter(G => G.on).flatMap(G => [`${G.g.name} — direct`, `${G.g.name} — indirect`, `${G.g.name} — balance`]), "No funding source", "Total costs"];
+  const lines = [head.map(q).join(",")];
+  for (let k = 0; k < P.N; k++) {
+    const mi = P.S + k;
+    lines.push([toM(mi), ...P.gs.filter(G => G.on).flatMap(G => [G.dir[k].toFixed(2), G.idc[k].toFixed(2), (!G.unl && mi >= G.s && mi <= G.e) ? G.bal[k].toFixed(2) : ""]), P.unfunded[k].toFixed(2), P.total[k].toFixed(2)].map(q).join(","));
+  }
+  lines.push(""); lines.push(["Cost","Month","Direct","Indirect","Paid by","Chart string"].map(q).join(","));
+  P.rows.forEach(r => r.cells.forEach((c, k) => { if (c) c.parts.forEach(p => lines.push([r.ex.name, toM(P.S + k), p.amt.toFixed(2), (p.idc || 0).toFixed(2), p.gid ? (gById(p.gid) || {}).name : "No funding source", p.gid ? (gById(p.gid) || {}).chartString || "" : ""].map(q).join(","))); }));
+  return lines.join("\n");
+}
+
+/* ---------- editors ---------- */
+const dlg = $("#dlg");
+function openDlg(html) { dlg.innerHTML = html; if (!dlg.open) dlg.showModal(); }
+dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
+
+/* ---------- support detail: how a grant's money has been and will be spent ---------- */
+const COST_PAL = ["#4C78A8","#F58518","#54A24B","#E45756","#72B7B2","#D4A20F","#B279A2","#FF9DA6","#9D755D","#79706E"];
+function grantSeries(gid) {
+  const P = project(state), G = P.gm[gid]; if (!G) return null;
+  const PA = pastRun(P, "all"), pS = P.S - PA.past;
+  const from = Math.max(G.s, pS), to = Math.min(G.e, P.S + P.N - 1);
+  const months = [];
+  let b = num(G.g.amount);
+  for (let mi = G.s; mi < from; mi++) {} // (months before the plan's earliest start carry no charges)
+  for (let mi = from; mi <= to; mi++) {
+    const past = mi < P.S, X = past ? PA.PP : P, k = past ? mi - pS : mi - P.S;
+    const byCost = new Map(); let direct = 0, idc = 0;
+    if (X) X.rows.forEach(r => { const c = r.cells[k]; if (!c) return; c.parts.forEach(p => { if (p.gid !== gid) return; const e = byCost.get(r.ex.id) || {d:0, i:0}; e.d += p.amt; e.i += p.idc || 0; byCost.set(r.ex.id, e); direct += p.amt; idc += p.idc || 0; }); });
+    const draw = direct + (G.incl ? idc : 0);
+    let bal = null;
+    if (!G.unl) { if (past) { bal = b; b -= draw; } else bal = mi === P.S ? G.avail : G.bal[mi - P.S - 1]; }
+    months.push({mi, past, byCost, direct, idc, draw, bal});
+  }
+  return {P, G, months};
+}
+function grantChartSVG(D, costIdx) {
+  const {P, G, months} = D, n = months.length;
+  const ml = 70, mr = 16, top = 22, BH = G.unl ? 0 : 150, gap = G.unl ? 0 : 34, CH = 150, bot = 24;
+  const W = Math.max(720, ml + mr + n * 16), totalH = top + BH + gap + CH + bot;
+  const pw = W - ml - mr, xj = j => ml + (j + 0.5) * pw / n, bw = Math.max(2, pw / n - 2);
+  let s = `<svg viewBox="0 0 ${W} ${totalH}" xmlns="http://www.w3.org/2000/svg" id="gchart" style="${W > 720 ? `width:${W}px;max-width:none` : "width:100%"};display:block;height:auto">`;
+  const jNow = months.findIndex(m => !m.past);
+  if (jNow > 0) s += `<rect x="${ml}" y="${top}" width="${jNow * pw / n}" height="${BH + gap + CH}" fill="var(--sunk)" opacity=".55"/>`;
+  months.forEach((m, j) => { if (m.mi % 12 === 0 || j === 0) { const x = ml + j * pw / n; s += `<line x1="${x}" x2="${x}" y1="${top}" y2="${top + BH + gap + CH}" stroke="var(--line)"/><text x="${x + 4}" y="${totalH - 6}" font-size="11" fill="var(--muted)">${m.mi % 12 === 0 ? Math.floor(m.mi / 12) : lbl(m.mi)}</text>`; } });
+  if (jNow > 0) { const xd = ml + jNow * pw / n; s += `<line x1="${xd}" x2="${xd}" y1="${top - 8}" y2="${top + BH + gap + CH}" stroke="var(--ink)" stroke-dasharray="3 3" opacity=".6"/><text x="${xd - 6}" y="${top - 10}" text-anchor="end" font-size="11" fill="var(--muted)">Past</text><text x="${xd + 6}" y="${top - 10}" font-size="11" fill="var(--muted)">Projected</text>`; }
+  let labels = "";
+  if (!G.unl) {
+    const vals = months.map(m => m.bal).concat([num(G.g.amount), 0]);
+    const vmax = Math.max(...vals), vmin = Math.min(...vals), st = niceStep(vmax - vmin), hi = Math.ceil(vmax / st) * st, lo = Math.floor(vmin / st) * st;
+    const y = v => top + (hi - v) / (hi - lo || 1) * BH;
+    for (let v = lo; v <= hi + 1e-6; v += st) { s += `<line x1="${ml}" x2="${W - mr}" y1="${y(v)}" y2="${y(v)}" ${Math.abs(v) < 1e-6 ? 'stroke="var(--ink)" stroke-width="1.5" opacity=".7"' : 'stroke="var(--line)"'}/>`; labels += `<text x="${ml - 8}" y="${y(v) + 4}" text-anchor="end" font-size="11" fill="var(--muted)">${esc(v === 0 ? fmt(0) : fmtc(v))}</text>`; }
+    const pts = months.map((m, j) => `${xj(j).toFixed(1)} ${y(m.bal).toFixed(1)}`);
+    s += `<path d="M${xj(0).toFixed(1)} ${y(Math.max(lo, 0))}L${pts.join("L")}L${xj(n - 1).toFixed(1)} ${y(Math.max(lo, 0))}Z" fill="${esc(G.g.color)}" opacity=".12"/>`;
+    s += `<path d="M${pts.join("L")}" fill="none" stroke="${esc(G.g.color)}" stroke-width="2.4" stroke-linejoin="round"/>`;
+    if (lo < 0) s += `<rect x="${ml}" y="${y(0)}" width="${pw}" height="${y(lo) - y(0)}" fill="var(--bad)" opacity=".08"/><defs><clipPath id="gneg"><rect x="${ml}" y="${y(0)}" width="${pw}" height="${y(lo) - y(0) + 4}"/></clipPath></defs><path d="M${pts.join("L")}" fill="none" stroke="var(--bad)" stroke-width="2.8" stroke-linejoin="round" clip-path="url(#gneg)"/><text x="${ml + 6}" y="${y(0) + 15}" font-size="11" font-weight="600" fill="var(--bad)">Overspent</text>`;
+    s += `<text x="${ml + 6}" y="${top + 13}" font-size="11" font-weight="600" fill="var(--muted)">Balance at the start of each month</text>`;
+  }
+  const cy0 = top + BH + gap;
+  const cmax0 = Math.max(1, ...months.map(m => m.direct + m.idc)), cst = niceStep(cmax0), cmax = Math.ceil(cmax0 / cst) * cst;
+  const cy = v => cy0 + CH - v / cmax * CH;
+  for (let v = 0; v <= cmax + 1e-6; v += cst) { s += `<line x1="${ml}" x2="${W - mr}" y1="${cy(v)}" y2="${cy(v)}" stroke="var(--line)"/>`; labels += `<text x="${ml - 8}" y="${cy(v) + 4}" text-anchor="end" font-size="11" fill="var(--muted)">${esc(v === 0 ? fmt(0) : fmtc(v))}</text>`; }
+  s += `<text x="${ml + 6}" y="${cy0 - 6}" font-size="11" font-weight="600" fill="var(--muted)">Charged each month, by cost</text>`;
+  months.forEach((m, j) => {
+    let acc = 0;
+    [...m.byCost.entries()].sort((a, b) => (costIdx.get(a[0]) ?? 0) - (costIdx.get(b[0]) ?? 0)).forEach(([id, e]) => {
+      const h = e.d / cmax * CH; if (h <= 0) return;
+      s += `<rect x="${(xj(j) - bw / 2).toFixed(1)}" y="${(cy(acc) - h).toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" fill="${COST_PAL[(costIdx.get(id) ?? 0) % COST_PAL.length]}" ${m.past ? 'opacity=".7"' : ""}/>`;
+      acc += e.d;
+    });
+    if (m.idc > 0.5) { const h = m.idc / cmax * CH; s += `<rect x="${(xj(j) - bw / 2).toFixed(1)}" y="${(cy(acc) - h).toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" fill="url(#idcHatch)"/>`; }
+  });
+  s += `<defs><pattern id="idcHatch" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="5" height="5" fill="var(--sunk)"/><line x1="0" y1="0" x2="0" y2="5" stroke="var(--muted)" stroke-width="2"/></pattern></defs>`;
+  s += `<line id="ghov" x1="0" x2="0" y1="${top}" y2="${cy0 + CH}" stroke="var(--ink)" opacity="0"/><rect id="ghit" x="${ml}" y="0" width="${pw}" height="${cy0 + CH}" fill="transparent"/>`;
+  if (W > 720) return {svg: s + `</svg>`, axis: `<svg viewBox="0 0 ${ml} ${totalH}" style="width:${ml}px;height:${totalH}px" aria-hidden="true">${labels}</svg>`, W, n, ml, mr, jNow};
+  return {svg: s + labels + `</svg>`, axis: "", W, n, ml, mr, jNow};
+}
+function showGrant(id) {
+  const D = grantSeries(id); if (!D) return;
+  const {P, G, months} = D, g = G.g;
+  const costIdx = new Map(state.expenses.map((e, i) => [e.id, i]));
+  const C = grantChartSVG(D, costIdx);
+  const past = months.filter(m => m.past), fut = months.filter(m => !m.past);
+  const sumD = (arr, f) => arr.reduce((a, m) => a + f(m), 0);
+  // table by cost
+  const ids = [...new Set(months.flatMap(m => [...m.byCost.keys()]))].sort((a, b) => (costIdx.get(a) ?? 0) - (costIdx.get(b) ?? 0));
+  const exN = id => (state.expenses.find(e => e.id === id) || {name:"Removed cost"}).name;
+  const tot = (arr, id) => arr.reduce((a, m) => a + ((m.byCost.get(id) || {}).d || 0), 0);
+  const rowsT = ids.map(id => `<tr><td><i class="sw" style="background:${COST_PAL[(costIdx.get(id) ?? 0) % COST_PAL.length]}"></i>${esc(exN(id))}</td><td class="num">${fmt(tot(past, id))}</td><td class="num">${fmt(tot(fut, id))}</td><td class="num">${fmt(tot(months, id))}</td></tr>`).join("");
+  const idcP = sumD(past, m => m.idc), idcF = sumD(fut, m => m.idc);
+  const dP = sumD(past, m => m.direct), dF = sumD(fut, m => m.direct);
+  const endBal = !G.unl && months.length ? months[months.length - 1].bal - months[months.length - 1].draw : null;
+  const figs = G.unl
+    ? [[fmt(G.spentEff), "Received to date" + (G.auto ? " (from plan)" : "")], [fmt(sumD(fut.slice(0, 12), m => m.draw)), "Next 12 months"], [fmt(sumD(fut, m => m.draw)), "Rest of the projection"]]
+    : [[fmt(num(g.amount)), "Total award"], [fmt(G.spentEff), "Spent to date" + (G.auto ? " (from plan)" : "")], [fmt(G.avail), "Remaining now"], [endBal == null ? "—" : fmt(endBal), G.e < P.S + P.N ? "Left at end, " + lbl(G.e) : "Left at end of projection"]];
+  const meta = [g.funder, g.chartString ? `<span class="mono">${esc(g.chartString)}</span>` : "", `${validM(g.start) ? lbl(toIdx(g.start)) : "—"} – ${validM(g.end) ? lbl(toIdx(g.end)) : (G.unl ? "ongoing" : "—")}`,
+    !G.unl && num(g.idcRate) && g.idcBase !== "none" ? `${num(g.idcRate)}% ${BASE_LBL[g.idcBase]} indirect, ${g.awardBasis === "total" ? "within the award" : "on top of the award"}` : "", g.type === "Fellowship" ? esc(fellowDesc(g)) : ""].filter(Boolean);
+  dlg.classList.add("wide");
+  openDlg(`<div class="dlg-h"><div class="row"><h2><i class="sw" style="background:${esc(g.color)};width:14px;height:14px"></i>${esc(g.name)}</h2>${g.status === "pending" ? '<span class="tag pending">pending</span>' : ""}</div>
+    <p class="hint" style="margin:4px 0 0">${meta.map(x => x.startsWith("<") ? x : esc(x)).join(" · ")}</p></div>
+  <div class="dlg-b">
+    ${!G.on ? `<p class="muted">This grant is pending and not counted. Turn on “Count pending grants” to include it.</p>` : ""}
+    <div class="figs" style="margin:6px 0 16px">${figs.map(([v, l]) => `<div class="fig"><b>${v}</b><span>${esc(l)}</span></div>`).join("")}</div>
+    ${months.length ? `<div class="chartrow"><div class="yaxcol">${C.axis}</div><div class="chartwrap" id="gwrap">${C.svg}<div class="tip" id="gtip"></div></div></div>
+    <div class="legend" style="margin:6px 0 14px">${ids.map(id => `<span><i style="background:${COST_PAL[(costIdx.get(id) ?? 0) % COST_PAL.length]}"></i>${esc(exN(id))}</span>`).join("")}${idcP + idcF > 0.5 ? `<span><i style="background:repeating-linear-gradient(45deg,var(--muted) 0 2px,var(--sunk) 2px 5px)"></i>Indirect${G.incl ? "" : " (paid on top, not from the award)"}</span>` : ""}</div>
+    <div class="tbl-wrap"><table class="data"><thead><tr><th>Cost</th><th class="num">To date</th><th class="num">Projected</th><th class="num">Total</th></tr></thead>
+      <tbody>${rowsT || `<tr><td colspan="4" class="muted">No costs are charged to this ${g.type === "Fellowship" ? "fellowship" : "grant"}.</td></tr>`}
+      ${idcP + idcF > 0.5 ? `<tr><td class="muted">Indirect${G.incl ? "" : " (on top)"}</td><td class="num muted">${fmt(idcP)}</td><td class="num muted">${fmt(idcF)}</td><td class="num muted">${fmt(idcP + idcF)}</td></tr>` : ""}</tbody>
+      <tfoot><tr><td>${G.incl ? "Total drawn from the award" : "Total direct"}</td><td class="num">${fmt(dP + (G.incl ? idcP : 0))}</td><td class="num">${fmt(dF + (G.incl ? idcF : 0))}</td><td class="num">${fmt(dP + dF + (G.incl ? idcP + idcF : 0))}</td></tr></tfoot></table></div>
+    <p class="hint" style="margin-top:8px">Past months are worked out from each cost’s dates and funding split; the projection follows the current plan.</p>`
+    : `<p class="muted">Nothing to show within the projection window.</p>`}
+  </div>
+  <div class="dlg-f"><span class="spacer"></span><button class="btn" id="gClose">Close</button><button class="btn primary" id="gEdit">${g.type === "Fellowship" && g.personId ? "Edit in person’s cost" : "Edit"}</button></div>`);
+  $("#gClose").onclick = () => dlg.close();
+  $("#gEdit").onclick = () => { dlg.classList.remove("wide"); viewing ? null : editGrant(id); };
+  if (viewing) $("#gEdit").style.display = "none";
+  const svg = $("#gchart"), wrap = $("#gwrap"), tip = $("#gtip"), hov = $("#ghov");
+  if (!svg) return;
+  const pw = C.W - C.ml - C.mr;
+  svg.addEventListener("pointermove", ev => {
+    const r = svg.getBoundingClientRect(), sx = (ev.clientX - r.left) / r.width * C.W;
+    const j = Math.max(0, Math.min(C.n - 1, Math.floor((sx - C.ml) / pw * C.n))), m = months[j];
+    const x = C.ml + (j + 0.5) * pw / C.n; hov.setAttribute("x1", x); hov.setAttribute("x2", x); hov.setAttribute("opacity", ".35");
+    let h = `<div><b>${lbl(m.mi)}</b><span>${m.past ? "past · from plan" : "projected"}</span></div>`;
+    if (m.bal != null) h += `<div><span>Balance at start</span><b class="${m.bal < 0 ? "neg" : ""}">${fmt(m.bal)}</b></div>`;
+    [...m.byCost.entries()].forEach(([cid, e]) => h += `<div><span><i class="sw" style="background:${COST_PAL[(costIdx.get(cid) ?? 0) % COST_PAL.length]}"></i>${esc(exN(cid))}</span><span>${fmt(e.d)}</span></div>`);
+    if (m.idc > 0.5) h += `<div><span>Indirect${G.incl ? "" : " (on top)"}</span><span>${fmt(m.idc)}</span></div>`;
+    if (!m.byCost.size) h += `<div><span style="opacity:.7">Nothing charged this month</span></div>`;
+    tip.innerHTML = h; tip.style.display = "block";
+    const wr = wrap.getBoundingClientRect();
+    let left = ev.clientX - wr.left + wrap.scrollLeft + 14;
+    if (left + tip.offsetWidth > wrap.scrollLeft + wr.width) left = ev.clientX - wr.left + wrap.scrollLeft - tip.offsetWidth - 14;
+    tip.style.left = left + "px"; tip.style.top = "10px";
+  });
+  svg.addEventListener("pointerleave", () => { tip.style.display = "none"; hov.setAttribute("opacity", "0"); });
+  if (C.W > 720 && C.jNow > 0) wrap.scrollLeft = Math.max(0, (C.ml + C.jNow * pw / C.n) - wrap.clientWidth * 0.3);
+}
+dlg.addEventListener("close", () => dlg.classList.remove("wide"));
+
+function editGrant(id) {
+  if (viewing) return;
+  dlg.classList.remove("wide");
+  const g = id ? gById(id) : null;
+  if (g && g.type === "Fellowship" && g.personId && state.expenses.some(x => x.id === g.personId)) return editExpense(g.personId);
+  const d = g || {name:"", funder:"", type:"Grant", status:"active", prob:50, start:nowM(), end:toM(toIdx(nowM()) + 36), amount:"", spent:0, color:PALETTE[state.grants.length % PALETTE.length], notes:"",
+    idcRate:num(state.settings.defaultIdc), idcBase:state.settings.defaultIdcBase || "mtdc", awardBasis:"direct"};
+  openDlg(`<div class="dlg-h"><h2>${g ? "Edit grant" : "Add grant"}</h2></div>
+  <div class="dlg-b"><div class="grid2">
+    <label class="f full">Name<input name="name" value="${esc(d.name)}" placeholder="e.g. Research grant, startup package"></label>
+    <label class="f">Funder<input name="funder" value="${esc(d.funder)}" placeholder="e.g. Funding agency"></label>
+    <label class="f">Chart string<input name="chartString" class="mono" value="${esc(d.chartString || "")}" placeholder="e.g. 10-4521-77310-RX" autocomplete="off" spellcheck="false"></label>
+    <label class="f">Type<select name="type">${["Grant","Startup","Gift or endowment","Internal","Contract","Departmental support"].concat(d.type === "Fellowship" ? ["Fellowship"] : []).map(t => `<option ${t === d.type ? "selected" : ""}>${t}</option>`).join("")}</select></label>
+    <label class="f full fundrow">Funding<select name="untracked"><option value="0" ${!d.untracked ? "selected" : ""}>Fixed amount — track the balance and when it runs out</option><option value="1" ${d.untracked ? "selected" : ""}>Ongoing support — pays its share with no balance to track (e.g. departmental TA funds)</option></select></label>
+    <label class="f full fel">This fellowship pays<select name="fellowMode"><option value="award" ${(d.fellowMode || "award") === "award" ? "selected" : ""}>A total award — track the balance</option><option value="percent" ${d.fellowMode === "percent" ? "selected" : ""}>A percentage of salary</option><option value="monthly" ${d.fellowMode === "monthly" ? "selected" : ""}>A fixed amount each month</option></select></label>
+    <label class="f fel felp">Percent of salary covered (%)<input name="fellowPct" type="number" min="0" max="100" step="any" value="${esc(d.fellowPct ?? 100)}"></label>
+    <label class="f fel felm">Amount per month<input name="fellowMonthly" type="number" min="0" step="any" value="${esc(d.fellowMonthly ?? "")}"></label>
+    <label class="f">Status<select name="status"><option value="active" ${d.status === "active" ? "selected" : ""}>Awarded</option><option value="pending" ${d.status === "pending" ? "selected" : ""}>Pending (submitted or planned)</option></select></label>
+    <label class="f" id="probWrap">Chance of funding (%)<input name="prob" type="number" min="0" max="100" value="${esc(d.prob)}"></label>
+    <label class="f">Starts<input name="start" type="month" placeholder="YYYY-MM" value="${esc(d.start)}"></label>
+    <label class="f"><span id="endLbl">Ends</span><input name="end" type="month" placeholder="YYYY-MM" value="${esc(d.end)}"></label>
+    <label class="f trk">Total award<input name="amount" type="number" min="0" step="any" value="${esc(d.amount)}"></label>
+    <label class="f"><span id="spentLbl">Spent before the projection starts</span><input name="spent" type="number" min="0" step="any" value="${num(d.spent) > 0 ? esc(d.spent) : ""}" placeholder="Blank = take it from the plan"></label>
+    <label class="f">Colour<input name="color" type="color" value="${esc(d.color)}"></label>
+    <label class="f trk">Indirect rate (%)<input name="idcRate" type="number" min="0" step="any" value="${esc(d.idcRate)}"></label>
+    <label class="f trk">Indirect applies to<select name="idcBase"><option value="mtdc" ${d.idcBase === "mtdc" ? "selected" : ""}>Modified total direct costs (MTDC)</option><option value="tdc" ${d.idcBase === "tdc" ? "selected" : ""}>Total direct costs (TDC)</option><option value="none" ${d.idcBase === "none" ? "selected" : ""}>No indirect</option></select></label>
+    <label class="f full trk">The award amount covers<select name="awardBasis"><option value="direct" ${d.awardBasis !== "total" ? "selected" : ""}>Direct costs only — indirect is paid on top</option><option value="total" ${d.awardBasis === "total" ? "selected" : ""}>Direct and indirect — indirect comes out of the award</option></select></label>
+    <label class="f full">Notes<textarea name="notes" rows="2" placeholder="Restrictions, reporting dates, carryover rules…">${esc(d.notes)}</textarea></label>
+  </div><p class="err" id="dErr"></p></div>
+  <div class="dlg-f">${g ? `<button class="btn danger" id="dDel">Delete</button><button class="btn" id="dDup">Duplicate</button>` : ""}<span class="spacer"></span><button class="btn" id="dCancel">Cancel</button><button class="btn primary" id="dSave">${g ? "Save grant" : "Add grant"}</button></div>`);
+  const f = n => dlg.querySelector(`[name=${n}]`);
+  const syncProb = () => $("#probWrap").style.visibility = f("status").value === "pending" ? "visible" : "hidden";
+  f("status").onchange = syncProb; syncProb();
+  const syncTrk = () => {
+    const fel = f("type").value === "Fellowship", fm = f("fellowMode").value;
+    dlg.querySelectorAll(".fel").forEach(el => el.style.display = fel ? "" : "none");
+    dlg.querySelector(".felp").style.display = fel && fm === "percent" ? "" : "none";
+    dlg.querySelector(".felm").style.display = fel && fm === "monthly" ? "" : "none";
+    dlg.querySelector(".fundrow").style.display = fel ? "none" : "";
+    if (fel) f("untracked").value = fm === "award" ? "0" : "1";
+    const u = f("untracked").value === "1";
+    dlg.querySelectorAll(".trk").forEach(el => el.style.display = u ? "none" : "");
+    $("#spentLbl").textContent = u ? "Received before the projection starts" : "Spent before the projection starts";
+    $("#endLbl").textContent = u ? "Ends (leave blank if ongoing)" : "Ends";
+  };
+  f("untracked").onchange = syncTrk;
+  f("type").onchange = () => { if (f("type").value === "Departmental support") f("untracked").value = "1"; syncTrk(); };
+  f("fellowMode").onchange = syncTrk;
+  syncTrk();
+  $("#dCancel").onclick = () => dlg.close();
+  const read = () => {
+    const o = {name:f("name").value.trim(), funder:f("funder").value.trim(), chartString:f("chartString").value.trim(), type:f("type").value, status:f("status").value, prob:num(f("prob").value),
+      start:f("start").value.trim(), end:f("end").value.trim(), amount:num(f("amount").value), spent:num(f("spent").value), color:f("color").value, notes:f("notes").value,
+      idcRate:num(f("idcRate").value), idcBase:f("idcBase").value, awardBasis:f("awardBasis").value, untracked:f("untracked").value === "1",
+      fellowMode: f("type").value === "Fellowship" ? f("fellowMode").value : "", fellowPct:num(f("fellowPct").value), fellowMonthly:num(f("fellowMonthly").value)};
+    if (!o.name) return "Give the grant a name.";
+    if (o.fellowMode === "percent" && (o.fellowPct <= 0 || o.fellowPct > 100)) return "Enter the percent of salary covered, between 1 and 100.";
+    if (o.fellowMode === "monthly" && o.fellowMonthly <= 0) return "Enter the amount the fellowship pays each month.";
+    if (o.untracked) {
+      if (!validM(o.start) || (o.end && !validM(o.end))) return "Enter months as YYYY-MM; the end can be left blank.";
+      if (o.end && toIdx(o.end) < toIdx(o.start)) return "The end month is before the start month.";
+      return Object.assign(o, {amount:0, idcRate:0, idcBase:"none", awardBasis:"direct", prob:o.status === "pending" ? o.prob : 100});
+    }
+    if (o.idcRate < 0 || o.idcRate > 200) return "Enter an indirect rate between 0 and 200%.";
+    if (!validM(o.start) || !validM(o.end)) return "Enter start and end months as YYYY-MM.";
+    if (toIdx(o.end) < toIdx(o.start)) return "The end month is before the start month.";
+    if (o.amount <= 0) return "Enter the total award amount.";
+    return o;
+  };
+  $("#dSave").onclick = () => {
+    const o = read(); if (typeof o === "string") { $("#dErr").textContent = o; return; }
+    if (g) Object.assign(g, o); else state.grants.push({id:uid(), ...o});
+    dlg.close(); commit();
+  };
+  if (g) {
+    $("#dDup").onclick = () => { const o = read(); if (typeof o === "string") { $("#dErr").textContent = o; return; } state.grants.push({...o, id:uid(), name:o.name + " (copy)", color:PALETTE[state.grants.length % PALETTE.length]}); dlg.close(); commit(); };
+    confirmBtn($("#dDel"), "Click again to delete", () => {
+      state.grants = state.grants.filter(x => x.id !== g.id);
+      state.expenses.forEach(e => e.alloc = (e.alloc || []).filter(a => a.grantId !== g.id));
+      dlg.close(); commit();
+    });
+  }
+}
+
+const ZL = ["fit", 14, 22, 34, 50];
+let stripZoom = (() => { try { const v = localStorage.getItem("labRunway.stripZoom"); return v && v !== "fit" && ZL.includes(+v) ? +v : "fit"; } catch (e) { return "fit"; } })();
+function editExpense(id) {
+  if (viewing) return;
+  dlg.classList.remove("wide");
+  const e = id ? state.expenses.find(x => x.id === id) : null;
+  const d = e ? JSON.parse(JSON.stringify(e)) : {name:"", category:"Personnel", kind:"monthly", amount:"", start:nowM(), end:toM(toIdx(nowM()) + 35), fringe:0, raise:3, alloc:(() => { const g0 = state.grants.find(g => g.type !== "Fellowship"); return g0 ? [{grantId:g0.id, pct:100, start:"", end:""}] : []; })(), notes:""};
+  const cats = ["Personnel","Supplies","Equipment","Services","Travel","Publication","Tuition","Subaward","Other"];
+  openDlg(`<div class="dlg-h"><h2>${e ? "Edit cost" : "Add cost"}</h2></div>
+  <div class="dlg-b"><div class="grid2">
+    <label class="f full">Name<input name="name" value="${esc(d.name)}" placeholder="e.g. Postdoc — A. Rivera, reagents, sequencer"></label>
+    <label class="f">Category<select name="category">${cats.map(c => `<option ${c === d.category ? "selected" : ""}>${c}</option>`).join("")}</select></label>
+    <label class="f" id="roleWrap">Role<select name="role"><option value="">Choose a role</option>${ROLES.map(r => `<option ${r === d.role ? "selected" : ""}>${r}</option>`).join("")}</select></label>
+    <label class="f">Recurs<select name="kind"><option value="monthly" ${d.kind !== "once" ? "selected" : ""}>Every month</option><option value="once" ${d.kind === "once" ? "selected" : ""}>One time</option></select></label>
+    <label class="f"><span id="amtLbl">Amount per month</span><input name="amount" type="number" min="0" step="any" value="${esc(d.amount)}"></label>
+    <label class="f" id="fringeWrap">Fringe / benefits (%)<input name="fringe" type="number" min="0" step="any" value="${esc(d.fringe)}"></label>
+    <label class="f"><span id="startLbl">Starts</span><input name="start" type="month" placeholder="YYYY-MM" value="${esc(d.start)}"></label>
+    <label class="f" id="endWrap">Ends<input name="end" type="month" placeholder="YYYY-MM" value="${esc(d.end)}"></label>
+    <label class="f" id="raiseWrap">Annual increase (%)<input name="raise" type="number" step="any" value="${esc(d.raise)}"></label>
+    <p class="full muted" id="curHint" style="margin:-4px 0 0;font-size:.84rem"></p>
+    <label class="full" style="display:flex;gap:8px;align-items:flex-start;font-size:.88rem"><input name="idcExempt" type="checkbox" ${isExempt(d) ? "checked" : ""} style="margin-top:4px"><span>Exclude from the indirect base on MTDC grants<br><small class="muted">Usually equipment, tuition remission and the part of a subaward above the threshold. TDC grants charge indirect on everything.</small></span></label>
+  </div>
+  <h3 style="font-size:1rem;margin:18px 0 6px">Paid by</h3>
+  <p class="hint" id="pbHint" style="margin:0 0 8px;font-size:.84rem;color:var(--muted)"></p>
+  <div class="allocsum" id="aSum"></div>
+  <h4 class="sublabel">Funding lines</h4>
+  <div class="alloc h"><span>Source</span><span>Share</span><span>From</span><span>To</span><span></span></div>
+  <div id="allocs"></div>
+  <div class="row" style="gap:8px;margin-top:4px">
+    <button class="btn small" id="aAdd" ${state.grants.some(g => g.type !== "Fellowship") ? "" : "disabled"}>Add grant funding</button>
+    <button class="btn small" id="fAdd">Add a fellowship</button>
+  </div>
+  ${state.grants.some(g => g.type !== "Fellowship") ? "" : `<p class="allocsum muted">Add a grant first to assign this cost to it.</p>`}
+  <label class="f" style="margin-top:12px">Notes<textarea name="notes" rows="2">${esc(d.notes)}</textarea></label>
+  <p class="err" id="dErr"></p></div>
+  <div class="dlg-f">${e ? `<button class="btn danger" id="dDel">Delete</button><button class="btn" id="dDup">Duplicate</button>` : ""}<span class="spacer"></span><button class="btn" id="dCancel">Cancel</button><button class="btn primary" id="dSave">${e ? "Save cost" : "Add cost"}</button></div>`);
+  const f = n => dlg.querySelector(`[name=${n}]`);
+  const pid = e ? e.id : uid();
+  const isFelId = gid => { const g = gById(gid); return !!g && g.type === "Fellowship"; };
+  let alloc = d.alloc.filter(a => !isFelId(a.grantId)).map(a => ({...a, _k:uid()}));
+  const otherFel = d.alloc.filter(a => isFelId(a.grantId) && gById(a.grantId).personId !== pid);
+  let fels = state.grants.filter(g => g.type === "Fellowship" && g.personId === pid).map(g => JSON.parse(JSON.stringify(g)));
+  const open = new Set();
+  const nonFel = () => state.grants.filter(g => g.type !== "Fellowship");
+  const NUMK = ["fellowMonthly","fellowPct","amount","spent"];
+  const isPers = () => f("category").value === "Personnel";
+  const startKey = x => validM(x.start) ? toIdx(x.start) : -Infinity;
+  let gapAck = false;
+
+  // ----- coverage: month by month, mirroring the projection engine -----
+  const grantOn = g => !!g && (g.status === "active" || (g.status === "pending" && state.settings.includePending));
+  const inGrant = (g, m) => (!validM(g.start) || m >= toIdx(g.start)) && (!validM(g.end) || m <= toIdx(g.end));
+  const coverage = () => {
+    const once = f("kind").value === "once", cs = f("start").value.trim(), ce = once ? cs : f("end").value.trim();
+    const amt = num(f("amount").value), rz = once ? 0 : num(f("raise").value), fr = num(f("fringe").value);
+    if (!validM(cs) || !validM(ce) || toIdx(ce) < toIdx(cs) || amt <= 0) return null;
+    const out = [];
+    for (let m = toIdx(cs); m <= toIdx(ce); m++) {
+      const cost = amt * Math.pow(1 + rz / 100, Math.floor((m - toIdx(cs)) / 12)) * (1 + fr / 100);
+      const parts = [];
+      let left = cost, sal = cost / (1 + fr / 100);
+      for (const g of fels) {
+        if (!grantOn(g) || !validM(g.start) || !inGrant(g, m)) continue;
+        const nf = g.coversFringe === false, base = nf ? sal : left;
+        const paid = Math.min(g.fellowMode === "monthly" ? num(g.fellowMonthly) : base * num(g.fellowPct ?? 100) / 100, base);
+        sal -= nf ? paid : (left > 0 ? paid * sal / left : 0); left -= paid;
+        if (paid > 0.005) parts.push({n:felName(g.fellowTitle, f("name").value), c:g.color || PALETTE[0], amt:paid});
+      }
+      let pct = 0; const idle = [], act = [];
+      for (const a of alloc) {
+        if (!a.grantId || (validM(a.start) && m < toIdx(a.start)) || (validM(a.end) && m > toIdx(a.end))) continue;
+        const g = gById(a.grantId);
+        if (grantOn(g) && inGrant(g, m)) { pct += num(a.pct); act.push({gid:a.grantId, pct:num(a.pct)}); const am = left * num(a.pct) / 100; if (am > 0.005) parts.push({n:g.name, c:g.color, amt:am}); } else if (g && num(a.pct) > 0) idle.push(g);
+      }
+      const need = left > 0.5 ? Math.max(0, 100 - pct) : 0;
+      if (need > 0) parts.push({n:"No funding source", c:"var(--bad)", amt:left * need / 100});
+      out.push({m, cost, parts, unc: left > 0.5 ? left * need / 100 / cost : 0, need: Math.round(need * 100) / 100, over: left > 0.5 && pct > 100.001, overPct: pct, idle, act, sig: act.map(x => x.gid + ":" + x.pct).sort().join(",") + "|" + Math.round(need * 100)});
+    }
+    return out;
+  };
+  const ranges = (cov, test, keyOf) => {
+    const rs = [];
+    for (const c of cov) {
+      if (!test(c)) continue;
+      const last = rs[rs.length - 1];
+      if (last && last.to === c.m - 1 && last.key === keyOf(c)) { last.to = c.m; last.cells.push(c); }
+      else rs.push({from:c.m, to:c.m, key:keyOf(c), cells:[c]});
+    }
+    return rs;
+  };
+  const rng = r => r.from === r.to ? lbl(r.from) : `${lbl(r.from)} – ${lbl(r.to)}`;
+
+  // ----- the Paid by list: grant lines and fellowships together, in date order -----
+  const felSummary = g => `${fellowDesc(g)}${g.status === "pending" ? " · applied" : ""}`;
+  const drawAll = () => {
+    const items = [...alloc.map(a => ({t:"a", x:a})), ...fels.map(g => ({t:"f", x:g}))].sort((p, q) => startKey(p.x) - startKey(q.x));
+    $("#allocs").innerHTML = items.map(it => it.t === "a" ? (a => `<div class="alloc" data-ak="${a._k}">
+      <select data-k="grantId" aria-label="Grant">${nonFel().map(g => `<option value="${esc(g.id)}" ${g.id === a.grantId ? "selected" : ""}>${esc(g.name)}${g.status === "pending" ? " (pending)" : ""}</option>`).join("")}${gById(a.grantId) ? "" : `<option value="" selected>Choose a grant</option>`}</select>
+      <span class="pctw"><input data-k="pct" type="number" min="0" max="100" step="any" value="${esc(a.pct)}" aria-label="Percent"><span>%</span></span>
+      <input class="am" data-k="start" type="month" placeholder="From YYYY-MM" value="${esc(a.start)}" aria-label="From month">
+      <input class="am" data-k="end" type="month" placeholder="To YYYY-MM" value="${esc(a.end)}" aria-label="To month">
+      <button class="x" data-rm="${a._k}" aria-label="Remove">×</button></div>`)(it.x)
+    : (g => { const m = g.fellowMode || "monthly", award = m === "award"; return `<div class="alloc felrow" data-fid="${esc(g.id)}">
+      <button class="fname" data-ftog="${esc(g.id)}" aria-expanded="${open.has(g.id)}"><i class="sw" style="background:${esc(g.color || PALETTE[0])}"></i><span><b class="felname">${esc(felName(g.fellowTitle, f("name").value))}</b><small>${esc(felSummary(g))}</small></span></button>
+      <span class="tag" title="Applied before the other sources">Fellowship</span>
+      <span class="fd">${validM(g.start) ? lbl(toIdx(g.start)) : "—"}</span><span class="fd">${validM(g.end) ? lbl(toIdx(g.end)) : (award ? "—" : "open-ended")}</span>
+      <button class="x" data-frm="${esc(g.id)}" aria-label="Remove fellowship">×</button></div>
+      ${open.has(g.id) ? `<div class="felcard" data-fid="${esc(g.id)}"><div class="grid2">
+        <label class="f">Fellowship title<input data-fk="fellowTitle" value="${esc(g.fellowTitle || "")}" placeholder="e.g. Graduate research fellowship"></label>
+        <label class="f">Funder<input data-fk="funder" value="${esc(g.funder || "")}" placeholder="e.g. Private foundation"></label>
+        <label class="f">Chart string<input data-fk="chartString" class="mono" value="${esc(g.chartString || "")}" placeholder="e.g. 10-4521-77310-RX" autocomplete="off" spellcheck="false"></label>
+        <label class="f">Pays<select data-fk="fellowMode"><option value="monthly" ${m === "monthly" ? "selected" : ""}>A fixed amount each month</option><option value="percent" ${m === "percent" ? "selected" : ""}>A percentage of salary</option><option value="award" ${award ? "selected" : ""}>A total award — track the balance</option></select></label>
+        <label class="f">Status<select data-fk="status"><option value="active" ${g.status !== "pending" ? "selected" : ""}>Awarded</option><option value="pending" ${g.status === "pending" ? "selected" : ""}>Applied (pending)</option></select></label>
+        ${m === "monthly" ? `<label class="f">Amount per month<input data-fk="fellowMonthly" type="number" min="0" step="any" value="${esc(g.fellowMonthly ?? "")}"></label>`
+          : `<label class="f">Percent of salary covered (%)<input data-fk="fellowPct" type="number" min="0" max="100" step="any" value="${esc(g.fellowPct ?? 100)}"></label>`}
+        ${award ? `<label class="f">Total award<input data-fk="amount" type="number" min="0" step="any" value="${esc(g.amount || "")}"></label>` : ""}
+        <label class="f">Starts<input data-fk="start" type="month" placeholder="YYYY-MM" value="${esc(g.start || "")}"></label>
+        <label class="f">Ends${award ? "" : " (blank if open-ended)"}<input data-fk="end" type="month" placeholder="YYYY-MM" value="${esc(g.end || "")}"></label>
+        <label class="f">${award ? "Spent" : "Received"} before the projection starts<input data-fk="spent" type="number" min="0" step="any" value="${num(g.spent) > 0 ? esc(g.spent) : ""}" placeholder="Blank = take it from the plan"></label>
+        <label class="full" style="display:flex;gap:8px;align-items:flex-start;font-size:.88rem"><input data-fk="coversFringe" type="checkbox" ${g.coversFringe !== false ? "checked" : ""} style="margin-top:4px"><span>Covers fringe / benefits<br><small class="muted">Untick if the fellowship pays toward salary only — the fringe then falls to the other funding lines.</small></span></label>
+        <div class="row full"><span class="spacer"></span><button class="btn small" data-ftog="${esc(g.id)}">Done</button></div>
+      </div></div>` : ""}`; })(it.x)).join("") || `<p class="muted" style="font-size:.86rem;margin:4px 0 8px">No funding yet.</p>`;
+    const A = k => alloc.find(a => a._k === k), F = id => fels.find(g => g.id === id);
+    $("#allocs").querySelectorAll(".alloc[data-ak] [data-k]").forEach(el => {
+      const a = A(el.closest(".alloc").dataset.ak), k = el.dataset.k;
+      el.oninput = () => { a[k] = k === "pct" ? num(el.value) : el.value.trim(); sumAlloc(); };
+      el.onchange = () => { a[k] = k === "pct" ? num(el.value) : el.value.trim(); if (k !== "pct") drawAll(); else sumAlloc(); };
+    });
+    $("#allocs").querySelectorAll("[data-rm]").forEach(el => el.onclick = () => { alloc = alloc.filter(a => a._k !== el.dataset.rm); drawAll(); });
+    $("#allocs").querySelectorAll("[data-ftog]").forEach(el => el.onclick = () => { const id = el.dataset.ftog; open.has(id) ? open.delete(id) : open.add(id); drawAll(); });
+    $("#allocs").querySelectorAll("[data-frm]").forEach(el => el.onclick = () => { fels = fels.filter(g => g.id !== el.dataset.frm); drawAll(); });
+    $("#allocs").querySelectorAll(".felcard [data-fk]").forEach(el => {
+      const g = F(el.closest(".felcard").dataset.fid), k = el.dataset.fk;
+      const setv = () => { g[k] = NUMK.includes(k) ? num(el.value) : el.value.trim(); };
+      if (el.type === "checkbox") el.onchange = () => { g[k] = el.checked; drawAll(); };
+      else if (el.tagName === "SELECT") el.onchange = () => { setv(); drawAll(); };
+      else {
+        el.oninput = () => { setv(); const row = $("#allocs").querySelector(`.felrow[data-fid="${g.id}"]`); if (row) { row.querySelector(".felname").textContent = felName(g.fellowTitle, f("name").value); row.querySelector("small").textContent = felSummary(g); } sumAlloc(); };
+        if (k === "start" || k === "end") el.onchange = () => { setv(); drawAll(); };
+      }
+    });
+    $("#fAdd").style.display = isPers() || fels.length ? "" : "none";
+    sumAlloc();
+  };
+  const addGap = (from, to, need) => {
+    // Suggest the funding source active for the most months of the gap, preferring a grant with a tracked balance.
+    const scored = nonFel().filter(grantOn).map(g => { let n = 0; for (let m = from; m <= to; m++) if (inGrant(g, m)) n++; return {g, score: n * 2 + (g.untracked ? 0 : 1), n}; }).sort((p, q) => q.score - p.score);
+    const g0 = scored[0] && scored[0].n > 0 ? scored[0].g : nonFel()[0]; if (!g0) return;
+    const cs = f("start").value.trim(), ce = f("kind").value === "once" ? cs : f("end").value.trim();
+    alloc.push({_k:uid(), grantId:g0.id, pct:need, start: validM(cs) && from <= toIdx(cs) ? "" : toM(from), end: validM(ce) && to >= toIdx(ce) ? "" : toM(to)});
+    drawAll();
+  };
+  // ----- adjust a period: click a month in the strip to set each grant's share for that stretch of months -----
+  let fixR = null;
+  const openFix = (cov, i) => {
+    const c = cov[i]; if (!c) return;
+    let a = i, z = i;
+    while (a > 0 && cov[a - 1].sig === c.sig) a--;
+    while (z < cov.length - 1 && cov[z + 1].sig === c.sig) z++;
+    const draft = new Map(); c.act.forEach(x => draft.set(x.gid, (draft.get(x.gid) || 0) + x.pct));
+    fixR = {from: cov[a].m, to: cov[z].m, draft};
+    sumAlloc();
+    const p = $("#fixPanel"); if (p && p.scrollIntoView) p.scrollIntoView({block: "nearest"});
+  };
+  const fixHTML = cov => {
+    if (!fixR || !cov.length || fixR.from < cov[0].m || fixR.to > cov[cov.length - 1].m) { fixR = null; return ""; }
+    const {from, to, draft} = fixR, nm = to - from + 1;
+    const activeIn = g => Array.from({length: nm}, (_, j) => inGrant(g, from + j));
+    const cands = nonFel().filter(g => grantOn(g) && activeIn(g).some(Boolean));
+    draft.forEach((v, gid) => { const g = gById(gid); if (g && !cands.includes(g)) cands.push(g); });
+    cands.sort((p, q) => (draft.get(q.id) || 0) - (draft.get(p.id) || 0));
+    const note = g => {
+      if (!grantOn(g)) return " · not counted (pending)";
+      const ins = activeIn(g); if (ins.every(Boolean)) return "";
+      const s0 = ins.indexOf(true), e0 = ins.lastIndexOf(true);
+      return s0 < 0 ? " · not active then" : ` · only active ${lbl(from + s0)}${e0 !== s0 ? " – " + lbl(from + e0) : ""}`;
+    };
+    return `<div class="fixp" id="fixPanel">
+      <div class="row" style="gap:4px 12px"><b>Adjust ${rng({from, to})}</b><span class="muted" style="font-size:.82rem">${nm} month${nm === 1 ? "" : "s"} · shares of ${fels.length ? "what’s left after fellowships" : "the cost"}</span><span class="spacer"></span><button class="x" data-fx="close" aria-label="Close">×</button></div>
+      ${cands.length ? cands.map(g => { const v = Math.round((draft.get(g.id) || 0) * 100) / 100; return `<div class="fxrow" data-gid="${esc(g.id)}"><span class="fxname"><span><i class="sw" style="background:${esc(g.color)}"></i>${esc(g.name)}</span><small class="muted">${esc(note(g))}</small></span><input type="range" min="0" max="100" step="1" value="${v}" aria-label="${esc(g.name)} share"><span class="pctw"><input type="number" min="0" max="100" step="any" value="${v}" aria-label="${esc(g.name)} percent"><span>%</span></span></div>`; }).join("")
+        : `<p class="muted" style="margin:6px 0">No grants are active in this period. Add one on the Support page, or extend a grant’s dates.</p>`}
+      <div class="row" style="margin-top:8px;gap:6px"><span id="fxTot"></span><span class="spacer"></span>${cands.length ? `<button class="btn small" data-fx="even">Split evenly</button><button class="btn small" data-fx="scale">Scale to 100%</button><button class="btn small primary" data-fx="apply">Apply to ${rng({from, to})}</button>` : ""}</div>
+    </div>`;
+  };
+  const applyFix = (from, to, draft) => {
+    const once = f("kind").value === "once", cs = toIdx(f("start").value.trim()), ce = once ? cs : toIdx(f("end").value.trim());
+    // a line's effective months, clipped to the cost's own period
+    const S0 = a => Math.max(cs, validM(a.start) ? toIdx(a.start) : cs), E0 = a => Math.min(ce, validM(a.end) ? toIdx(a.end) : ce);
+    const out = [];
+    for (const a of alloc) {
+      if (E0(a) < from || S0(a) > to) { out.push(a); continue; }
+      if (S0(a) < from) out.push({...a, _k:uid(), end:toM(from - 1)});
+      if (E0(a) > to) out.push({...a, _k:uid(), start:toM(to + 1)});
+    }
+    draft.forEach((pct, gid) => { if (pct > 0) out.push({_k:uid(), grantId:gid, pct:Math.round(pct * 100) / 100, start:from <= cs ? "" : toM(from), end:to >= ce ? "" : toM(to)}); });
+    // join back-to-back lines with the same grant and share
+    const key = a => a.grantId + "|" + num(a.pct);
+    out.sort((p, q) => key(p).localeCompare(key(q)) || S0(p) - S0(q));
+    const merged = [];
+    for (const a of out) {
+      const last = merged[merged.length - 1];
+      if (last && key(last) === key(a) && E0(last) + 1 >= S0(a)) { if (E0(a) > E0(last)) last.end = a.end; }
+      else merged.push({...a});
+    }
+    merged.forEach(a => { if (validM(a.start) && toIdx(a.start) <= cs) a.start = ""; if (validM(a.end) && toIdx(a.end) >= ce) a.end = ""; });
+    alloc = merged;
+  };
+  const bindFix = box => {
+    const p = box.querySelector("#fixPanel"); if (!p) return;
+    const tot = () => {
+      let t = 0; fixR.draft.forEach(v => t += num(v)); t = Math.round(t * 100) / 100;
+      const ok = Math.abs(t - 100) < 0.01;
+      p.querySelector("#fxTot").innerHTML = `Total <b class="${ok ? "" : t > 100 ? "warnc" : "neg"}">${t}%</b>${ok ? ` <span style="color:var(--good)">✓</span>` : t > 100 ? ` <span class="warnc" style="font-size:.82rem">over by ${Math.round((t - 100) * 100) / 100}%</span>` : ` <span class="neg" style="font-size:.82rem">short by ${Math.round((100 - t) * 100) / 100}%</span>`}`;
+    };
+    const rows = [...p.querySelectorAll(".fxrow")], ids = rows.map(r => r.dataset.gid);
+    rows.forEach(row => {
+      const gid = row.dataset.gid, rg = row.querySelector("input[type=range]"), nb = row.querySelector("input[type=number]");
+      rg.oninput = () => { nb.value = rg.value; fixR.draft.set(gid, num(rg.value)); tot(); };
+      nb.oninput = () => { rg.value = Math.min(100, num(nb.value)); fixR.draft.set(gid, num(nb.value)); tot(); };
+    });
+    const setAll = m => { rows.forEach(row => { const v = m.get(row.dataset.gid) || 0; row.querySelector("input[type=range]").value = v; row.querySelector("input[type=number]").value = v; }); fixR.draft = m; tot(); };
+    p.querySelector("[data-fx=close]").onclick = () => { fixR = null; sumAlloc(); };
+    const even = () => {
+      const use = ids.filter(id => (fixR.draft.get(id) || 0) > 0), L = use.length ? use : ids; if (!L.length) return;
+      const each = Math.floor(10000 / L.length) / 100, m = new Map();
+      L.forEach((id, i) => m.set(id, i === 0 ? Math.round((100 - each * (L.length - 1)) * 100) / 100 : each));
+      setAll(m);
+    };
+    const ev = p.querySelector("[data-fx=even]"); if (ev) ev.onclick = even;
+    const sc = p.querySelector("[data-fx=scale]"); if (sc) sc.onclick = () => {
+      let t = 0; fixR.draft.forEach(v => t += num(v)); if (t <= 0) { even(); return; }
+      const m = new Map(); let acc = 0, big = null;
+      fixR.draft.forEach((v, id) => { if (num(v) <= 0) return; const nv = Math.round(num(v) / t * 10000) / 100; m.set(id, nv); acc += nv; if (big === null || nv > m.get(big)) big = id; });
+      if (big !== null) m.set(big, Math.round((m.get(big) + 100 - acc) * 100) / 100);
+      setAll(m);
+    };
+    const ap = p.querySelector("[data-fx=apply]"); if (ap) ap.onclick = () => { applyFix(fixR.from, fixR.to, fixR.draft); fixR = null; drawAll(); };
+    tot();
+  };
+  // A one-row funding map for this cost: each month's colour shows who pays, red shows gaps.
+  const stripHTML = cov => {
+    const now = toIdx(nowM()), names = new Map(), z = stripZoom, cw = z === "fit" ? null : z;
+    const cells = cov.map((c, i) => {
+      const sum = c.parts.reduce((a, p) => a + p.amt, 0) || 1; let acc = 0;
+      const stops = c.parts.map(p => { names.set(p.n, p.c); const a0 = acc / sum * 100; acc += p.amt; return `${p.c} ${a0.toFixed(1)}% ${(acc / sum * 100).toFixed(1)}%`; }).join(", ");
+      return `<i data-i="${i}" class="${c.m % 12 === 0 ? "ys" : ""}${c.m === now ? " now" : ""}${c.over ? " over" : ""}${fixR && c.m >= fixR.from && c.m <= fixR.to ? " sel" : ""}" style="background:${stops ? `linear-gradient(to bottom, ${stops})` : "var(--sunk)"}" aria-label="${esc(lbl(c.m))}"></i>`;
+    }).join("");
+    const yrs = cov.map((c, i) => `<span>${c.m % 12 === 0 ? Math.floor(c.m / 12) : i === 0 ? lbl(c.m) : ""}</span>`).join("");
+    const mos = cw && cw >= 22 ? `<div class="cs-m">${cov.map(c => `<span>${MN[c.m % 12].slice(0, cw >= 34 ? 3 : 1)}</span>`).join("")}</div>` : "";
+    if (names.has("No funding source")) { const c = names.get("No funding source"); names.delete("No funding source"); names.set("No funding source", c); }
+    return `<div class="row" style="margin-top:10px"><span class="muted" style="font-size:.82rem">Month by month — hover for details, click a month to adjust that period</span><span class="spacer"></span>
+        <span class="seg"><button data-zoom="out" aria-label="Zoom out" ${z === "fit" ? "disabled" : ""}>−</button><button data-zoom="fit" aria-pressed="${z === "fit"}">Fit</button><button data-zoom="in" aria-label="Zoom in" ${z === ZL[ZL.length - 1] ? "disabled" : ""}>+</button></span></div>
+      <div class="cs-wrap"><div class="covstrip" data-z="${cw ? "px" : "fit"}" style="${cw ? `--cw:${cw}px` : ""}"><div class="cs-y">${yrs}</div>${mos}<div class="cs-c">${cells}</div></div><div class="cs-tip" role="status"></div></div>
+      <div class="legend" style="margin:4px 0 2px">${[...names].map(([n, c]) => `<span><i style="background:${c}"></i>${esc(n)}</span>`).join("")}</div>`;
+  };
+  const bindStrip = (box, cov, ratio) => {
+    const strip = box.querySelector(".covstrip"), tip = box.querySelector(".cs-tip"), wrap = box.querySelector(".cs-wrap");
+    if (!strip) return;
+    if (ratio != null) strip.scrollLeft = ratio * strip.scrollWidth;
+    box.querySelectorAll("[data-zoom]").forEach(b => b.onclick = () => {
+      let i = ZL.indexOf(stripZoom);
+      i = b.dataset.zoom === "in" ? Math.min(ZL.length - 1, i + 1) : b.dataset.zoom === "out" ? Math.max(0, i - 1) : 0;
+      stripZoom = ZL[i]; try { localStorage.setItem("labRunway.stripZoom", String(stripZoom)); } catch (e) {}
+      sumAlloc();
+    });
+    const show = el => {
+      const c = cov[+el.dataset.i]; if (!c) return;
+      tip.innerHTML = `<div class="h"><b>${lbl(c.m)}</b><span>${fmt(c.cost)}</span></div>` + c.parts.map(p => `<div class="r${p.n === "No funding source" ? " gap" : ""}"><i style="background:${p.c}"></i><span>${esc(p.n)}</span><span>${fmt(p.amt)}</span><span class="pc">${Math.round(p.amt / (c.cost || 1) * 100)}%</span></div>`).join("")
+        + (c.over ? `<div class="gap" style="margin-top:4px">Grant lines add up to ${Math.round(c.overPct)}% — more than the cost</div>` : "")
+        + `<div style="opacity:.7;margin-top:5px">${c.unc > 0.0005 || c.over ? "Click to fix this period" : "Click to adjust this period"}</div>`;
+      tip.style.display = "block";
+      const wr = wrap.getBoundingClientRect(), r = el.getBoundingClientRect();
+      const x = Math.max(0, Math.min(wr.width - tip.offsetWidth, r.left - wr.left + r.width / 2 - tip.offsetWidth / 2));
+      tip.style.left = x + "px"; tip.style.top = (r.bottom - wr.top + 8) + "px";
+      strip.querySelectorAll(".cs-c i.hl").forEach(i => i.classList.remove("hl")); el.classList.add("hl");
+    };
+    strip.querySelectorAll(".cs-c i").forEach(el => { el.onpointerenter = () => show(el); el.onclick = () => { openFix(cov, +el.dataset.i); }; });
+    strip.onpointerleave = ev => { if (ev.pointerType === "touch") return; tip.style.display = "none"; strip.querySelectorAll(".cs-c i.hl").forEach(i => i.classList.remove("hl")); };
+    strip.onscroll = () => { tip.style.display = "none"; };
+  };
+  const sumAlloc = () => {
+    gapAck = false; const sb = $("#dSave"); if (sb) sb.textContent = e ? "Save cost" : "Add cost";
+    $("#pbHint").textContent = fels.length
+      ? "Click a month in the timeline to set each grant’s share for that period — the funding lines below are built from it, and you can still edit them directly. Fellowships are applied first; the grant shares are of what’s left. Each month needs to add up to 100%."
+      : "Click a month in the timeline to set each grant’s share for that period — the funding lines below are built from it, and you can still edit them directly. Each month needs to add up to 100%.";
+    const cov = coverage(), box = $("#aSum");
+    const oldStrip = box.querySelector(".covstrip"), ratio = oldStrip ? oldStrip.scrollLeft / (oldStrip.scrollWidth || 1) : null;
+    if (!cov) { box.innerHTML = ""; return; }
+    const gaps = ranges(cov, c => c.unc > 0.0005, c => c.need + "|" + c.idle.map(g => g.id).join(","));
+    const overs = ranges(cov, c => c.over, c => String(Math.round(c.overPct)));
+    const felFull = cov.every(c => c.need === 0 && !c.over) && fels.length && alloc.length === 0;
+    let h = stripHTML(cov) + fixHTML(cov);
+    if (!gaps.length && !overs.length) {
+      h += `<div class="cov ok">${felFull ? "Fellowships cover the full cost for its whole period — no other funding is needed." : `Fully funded for every month, ${rng({from:cov[0].m, to:cov[cov.length - 1].m})}.`}</div>`;
+    } else {
+      h += gaps.map(r => {
+        const c = r.cells[0], share = Math.round(c.unc * 1000) / 10;
+        const why = c.idle.length ? ` <small>${c.idle.map(g => `${esc(g.name)} isn’t active then${validM(g.end) && r.from > toIdx(g.end) ? ` (ended ${lbl(toIdx(g.end))})` : validM(g.start) && r.to < toIdx(g.start) ? ` (starts ${lbl(toIdx(g.start))})` : ""}`).join("; ")}.</small>` : "";
+        return `<div class="cov gap"><span><b>${rng(r)}</b>: ${share >= 99.95 ? "no funding" : share + "% of the cost has no funding"}.${why}</span>${nonFel().length ? `<button class="btn small" data-gap="${r.from}|${r.to}|${c.need}">Add funding for this period</button>` : ""}</div>`;
+      }).join("");
+      h += overs.map(r => `<div class="cov over"><b>${rng(r)}</b>: the grant lines add up to ${r.key}% — more than the cost.</div>`).join("");
+    }
+    box.innerHTML = h;
+    bindStrip(box, cov, ratio);
+    bindFix(box);
+    box.querySelectorAll("[data-gap]").forEach(b => b.onclick = () => { const [a, z, n] = b.dataset.gap.split("|").map(Number); addGap(a, z, n); });
+  };
+  const syncKind = () => {
+    const once = f("kind").value === "once";
+    $("#endWrap").style.display = once ? "none" : ""; $("#raiseWrap").style.display = once ? "none" : "";
+    $("#amtLbl").textContent = once ? "Amount" : "Starting amount per month"; $("#startLbl").textContent = once ? "Month" : "Starts";
+  };
+  let exTouched = false; f("idcExempt").onchange = () => exTouched = true;
+  const syncRole = () => { $("#roleWrap").style.display = isPers() ? "" : "none"; };
+  f("category").onchange = () => { if (!exTouched) f("idcExempt").checked = EXEMPT_CATS.includes(f("category").value); syncRole(); drawAll(); };
+  syncRole();
+  f("name").addEventListener("input", () => $("#allocs").querySelectorAll(".felrow").forEach(row => { const g = fels.find(x => x.id === row.dataset.fid); if (g) row.querySelector(".felname").textContent = felName(g.fellowTitle, f("name").value); }));
+  $("#fAdd").onclick = () => { const g = {id:uid(), type:"Fellowship", fellowTitle:"Fellowship", funder:"", fellowMode:"monthly", fellowMonthly:"", fellowPct:100, coversFringe:true, status:"active", start:validM(f("start").value.trim()) ? f("start").value.trim() : nowM(), end:"", amount:0, spent:0, color:PALETTE[(state.grants.length + fels.length) % PALETTE.length]}; fels.push(g); open.add(g.id); drawAll(); };
+  $("#aAdd").onclick = () => { alloc.push({_k:uid(), grantId:(nonFel()[0] || {}).id || "", pct:alloc.length ? 0 : 100, start:"", end:""}); drawAll(); };
+  f("kind").onchange = syncKind; syncKind(); drawAll();
+  const syncCur = () => {
+    sumAlloc();
+    const e2 = {kind:f("kind").value, amount:f("amount").value, start:f("start").value.trim(), end:f("end").value.trim(), raise:f("raise").value};
+    if (e2.kind === "once" || !num(e2.amount) || !validM(e2.start)) { $("#curHint").textContent = ""; return; }
+    const {cur, when} = curAmount(e2), pers = isPers();
+    const lead = {current:"Current", starting:"Starting", final:"Final"}[when];
+    $("#curHint").textContent = `${lead} ${pers ? "salary" : "amount"}: ${fmt(cur)} per month (${fmt(cur * 12)}/yr) before fringe, with raises counted from the start month.`;
+  };
+  ["amount","start","end","raise","fringe","kind","category"].forEach(n => { f(n).addEventListener("input", syncCur); f(n).addEventListener("change", syncCur); });
+  syncCur();
+  $("#dCancel").onclick = () => dlg.close();
+  const read = () => {
+    const once = f("kind").value === "once";
+    const clean = alloc.filter(a => a.grantId).sort((p, q) => startKey(p) - startKey(q)).map(({_k, ...a}) => a);
+    const o = {name:f("name").value.trim(), category:f("category").value, kind:once ? "once" : "monthly", amount:num(f("amount").value),
+      start:f("start").value.trim(), end:once ? f("start").value.trim() : f("end").value.trim(), fringe:num(f("fringe").value), raise:once ? 0 : num(f("raise").value),
+      alloc:[...fels.map(g => ({grantId:g.id, pct:0, start:"", end:""})), ...clean, ...otherFel], notes:f("notes").value, idcExempt:f("idcExempt").checked, role:f("category").value === "Personnel" ? f("role").value : ""};
+    if (!o.name) return "Give the cost a name.";
+    if (!validM(o.start) || !validM(o.end)) return "Enter months as YYYY-MM.";
+    if (toIdx(o.end) < toIdx(o.start)) return "The end month is before the start month.";
+    if (o.amount <= 0) return "Enter an amount.";
+    for (const a of o.alloc) { if ((a.start && !validM(a.start)) || (a.end && !validM(a.end))) return "Funding months must be YYYY-MM or left blank."; }
+    for (const g of fels) {
+      const nm = `“${(g.fellowTitle || "Fellowship").trim()}”`;
+      if (!(g.fellowTitle || "").trim()) return "Give each fellowship a title.";
+      if (!validM(g.start)) return `Enter a start month (YYYY-MM) for ${nm}.`;
+      if (g.fellowMode === "award" ? !validM(g.end) : (g.end && !validM(g.end))) return `Enter an end month (YYYY-MM) for ${nm}${g.fellowMode === "award" ? "" : ", or leave it blank"}.`;
+      if (g.end && toIdx(g.end) < toIdx(g.start)) return `${nm} ends before it starts.`;
+      if (g.fellowMode === "monthly" && num(g.fellowMonthly) <= 0) return `Enter the monthly amount for ${nm}.`;
+      if (g.fellowMode !== "monthly" && (num(g.fellowPct ?? 100) <= 0 || num(g.fellowPct ?? 100) > 100)) return `Enter the percent of salary ${nm} covers, between 1 and 100.`;
+      if (g.fellowMode === "award" && num(g.amount) <= 0) return `Enter the total award for ${nm}.`;
+    }
+    return o;
+  };
+  const applyFels = costName => {
+    const keep = new Set(fels.map(g => g.id));
+    const gone = state.grants.filter(g => g.type === "Fellowship" && g.personId === pid && !keep.has(g.id)).map(g => g.id);
+    state.grants = state.grants.filter(g => !gone.includes(g.id));
+    state.expenses.forEach(x => x.alloc = (x.alloc || []).filter(a => !gone.includes(a.grantId)));
+    fels.forEach(fg => {
+      const award = fg.fellowMode === "award";
+      const obj = {id:fg.id, name:felName(fg.fellowTitle, costName), fellowTitle:(fg.fellowTitle || "Fellowship").trim(), funder:fg.funder || "", chartString:fg.chartString || "", type:"Fellowship",
+        status:fg.status === "pending" ? "pending" : "active", prob:fg.status === "pending" ? num(fg.prob ?? 50) : 100, start:fg.start, end:fg.end || "",
+        amount:award ? num(fg.amount) : 0, spent:num(fg.spent), color:fg.color || PALETTE[0], notes:fg.notes || "", idcRate:0, idcBase:"none", awardBasis:"direct",
+        untracked:!award, fellowMode:fg.fellowMode || "monthly", fellowPct:num(fg.fellowPct ?? 100), fellowMonthly:num(fg.fellowMonthly), coversFringe:fg.coversFringe !== false, personId:pid};
+      const ix = state.grants.findIndex(g => g.id === fg.id);
+      if (ix >= 0) state.grants[ix] = obj; else state.grants.push(obj);
+    });
+  };
+  $("#dSave").onclick = () => {
+    const o = read(); if (typeof o === "string") { $("#dErr").textContent = o; return; }
+    const cov = coverage();
+    const short = cov ? cov.filter(c => c.unc > 0.0005).length : 0;
+    if (isPers() && short && !gapAck) {
+      $("#dErr").textContent = `Personnel costs need 100% funding every month, and ${short} month${short === 1 ? " is" : "s are"} short. Use “Add funding for this period” above, or click “Save with gaps” to keep them as unfunded.`;
+      gapAck = true; $("#dSave").textContent = "Save with gaps"; return;
+    }
+    if (e) Object.assign(e, o); else state.expenses.push({id:pid, ...o});
+    applyFels(o.name);
+    dlg.close(); commit();
+  };
+  if (e) {
+    $("#dDup").onclick = () => { const o = read(); if (typeof o === "string") { $("#dErr").textContent = o; return; } const c = JSON.parse(JSON.stringify(o)); c.alloc = c.alloc.filter(a => !fels.some(g => g.id === a.grantId)); state.expenses.push({...c, id:uid(), name:o.name + " (copy)"}); dlg.close(); commit(); };
+    confirmBtn($("#dDel"), fels.length ? "Click again — also deletes their fellowships" : "Click again to delete", () => {
+      const own = state.grants.filter(g => g.personId === e.id).map(g => g.id);
+      state.grants = state.grants.filter(g => !own.includes(g.id));
+      state.expenses = state.expenses.filter(x => x.id !== e.id);
+      state.expenses.forEach(x => x.alloc = (x.alloc || []).filter(a => !own.includes(a.grantId)));
+      dlg.close(); commit();
+    });
+  }
+}
+
+// Ask for the downloads capability once, up front, so Export is available on every visit to Setup.
+const dlReady = (window.claude && window.claude.use) ? Promise.resolve(window.claude.use("downloads")).catch(() => null) : Promise.resolve(null);
+initStore();
+</script>
+</body>
+</html>

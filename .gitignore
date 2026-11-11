@@ -1,0 +1,12 @@
+# Lab data exports: these contain salaries and other personal information
+*-lab-runway-backup.json
+*-projection.csv
+backups/
+
+# macOS
+.DS_Store
+
+# Editors
+.vscode/
+.idea/
+*.swp
