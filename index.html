@@ -1074,8 +1074,7 @@ function mapView(P, part = "all") {
   let cats = [...new Set(keys)];
   if (mapGroup === "type") cats.sort((a, b) => typeRank(a) - typeRank(b));
   if (mapGroup === "role") {
-    const OTHER = ["Supplies","Equipment","Services","Travel","Publication","Tuition","Subaward","Other"];
-    const rank = c => ROLES.includes(c) ? ROLES.indexOf(c) : c === "Personnel — no role set" ? 50 : 100 + Math.max(0, OTHER.indexOf(c));
+    const rank = c => ROLES.includes(c) ? ROLES.indexOf(c) : c === "Personnel — no role set" ? 50 : 100 + Math.max(0, OTHER_CATS.indexOf(c));
     cats.sort((a, b) => rank(a) - rank(b));
   }
   if (mapGroup === "source") { const gi = n => { const i = state.grants.findIndex(g => g.name === n); return i < 0 ? 999 : i; }; cats.sort((a, b) => gi(a) - gi(b)); }
@@ -1287,7 +1286,25 @@ function amountCell(e) {
   if (Math.abs(cur - base) > 0.5) sub += `<br>${fmt(base)} at start, +${num(e.raise)}%/yr`;
   return `${fmt(cur)}<br><small class="muted">${sub}</small>`;
 }
-const ROLES = ["Graduate Student","Postdoc","Associate Research Scholar","Research Staff","Undergraduate","Other"];
+const ROLES = ["Research Staff","Associate Research Scholar","Postdoc","Graduate Student","Undergraduate","Other"];
+const OTHER_CATS = ["Supplies","Equipment","Services","Travel","Publication","Tuition","Subaward","Other"];
+// Sort key for the Costs list: people before other costs, most senior role first, then the
+// remaining categories in their usual order.
+function costRank(e) {
+  if (e.category === "Personnel") { const i = ROLES.indexOf(e.role); return i < 0 ? ROLES.length : i; }
+  const i = OTHER_CATS.indexOf(e.category);
+  return 100 + (i < 0 ? OTHER_CATS.length : i);
+}
+// Anything finished sinks below everything still running, and is ordered the same way within that block.
+function costOrder(a, b) {
+  const pa = costStatus(a) === "past" ? 1 : 0, pb = costStatus(b) === "past" ? 1 : 0;
+  if (pa !== pb) return pa - pb;
+  const ra = costRank(a), rb = costRank(b);
+  if (ra !== rb) return ra - rb;
+  const sa = validM(a.start) ? toIdx(a.start) : 0, sb = validM(b.start) ? toIdx(b.start) : 0;
+  if (sa !== sb) return sa - sb; // within a role, whoever started earliest comes first
+  return String(a.name || "").localeCompare(String(b.name || ""));
+}
 let costFilter = (() => { try { return localStorage.getItem("labRunway.costFilter") || "all"; } catch (e) { return "all"; } })();
 // current / past / upcoming, judged against today (or, when viewing an old version, that version's projection start)
 function costStatus(e) {
@@ -1302,7 +1319,7 @@ function statusTag(e) {
   return `<span class="tag st-up">Starts ${lbl(toIdx(e.start))}</span>`;
 }
 function costsView(P) {
-  const shown = P.rows.filter(r => costFilter === "all" || costStatus(r.ex) === costFilter);
+  const shown = P.rows.filter(r => costFilter === "all" || costStatus(r.ex) === costFilter).sort((x, y) => costOrder(x.ex, y.ex));
   const counts = {all:P.rows.length, current:0, past:0, upcoming:0}; P.rows.forEach(r => counts[costStatus(r.ex)]++);
   const rows = shown.map(r => {
     const e = r.ex;
@@ -1319,7 +1336,7 @@ function costsView(P) {
   const fopts = [["all","All"],["current","Current"],["past","Past"],["upcoming","Upcoming"]];
   return `${mapView(P, "costs")}
   <section class="panel">
-    <div class="row"><div><h2>Costs</h2><p class="hint" style="margin:0">People, supplies, equipment and anything else you plan to pay for. Click a row to edit or reassign it.</p></div><span class="spacer"></span><span class="seg" role="group" aria-label="Show">${fopts.map(([v, t]) => `<button data-cf="${v}" aria-pressed="${v === costFilter}">${t} <span class="muted">${counts[v]}</span></button>`).join("")}</span><button class="btn primary" id="cAdd">Add cost</button></div>
+    <div class="row"><div><h2>Costs</h2><p class="hint" style="margin:0">People, supplies, equipment and anything else you plan to pay for, listed by role from most senior, with anything finished at the bottom. Click a row to edit or reassign it.</p></div><span class="spacer"></span><span class="seg" role="group" aria-label="Show">${fopts.map(([v, t]) => `<button data-cf="${v}" aria-pressed="${v === costFilter}">${t} <span class="muted">${counts[v]}</span></button>`).join("")}</span><button class="btn primary" id="cAdd">Add cost</button></div>
     <div class="tbl-wrap" style="margin-top:12px"><table class="data">
       <thead><tr><th>Cost</th><th>When</th><th class="num">Amount</th><th>Paid by</th><th class="num">Total in projection</th><th class="num">No source</th></tr></thead>
       <tbody>${rows || `<tr><td colspan="6" class="muted">${P.rows.length ? "No costs match this filter." : "No costs yet. Add salaries, stipends, supplies or equipment."}</td></tr>`}</tbody>
