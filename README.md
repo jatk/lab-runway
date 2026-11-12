@@ -26,7 +26,7 @@ That also means the data is tied to one browser profile on one machine, and clea
 - **Overview**: "funded through" date, balance chart with past and projected months, total support available, alerts. The chart zooms from one year at monthly resolution out to the whole span, scrolls sideways through time, and has a Today button to jump back to the current month.
 - **Funding map**: month-by-month grid of who pays for each cost, with grouping and collapsible groups. Rows follow the same seniority order as the Costs list, and people who have left are grouped at the bottom.
 - **Support**: grants, startup, departmental and fellowship support, each with a detail view of how its money is spent. Also includes funding composition charts and spending by fiscal year.
-- **Costs**: personnel and other costs with roles, raises, fringe, and current/past/upcoming status, listed by role from most senior down with anything finished at the bottom. Funding is set by clicking months on a per-person timeline.
+- **Costs**: personnel and other costs with roles, raises, fringe, and current/past/upcoming status, listed by role from most senior down with anything finished at the bottom. Each cost shows what it has drawn before the projection starts, what the projection window holds, and the two combined. Funding is set by clicking months on a per-person timeline.
 - **History**: automatic and named versions, with the ability to view or restore any of them.
 - **Indirect costs**: MTDC or TDC, either on top of or within the award.
 - **Fellowships**: tied to a person, paying a total award, a percentage of salary, or a fixed monthly amount, with or without fringe.

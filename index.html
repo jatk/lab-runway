@@ -100,13 +100,17 @@ table.data{width:100%;border-collapse:collapse;font-size:.9rem}
 table.data th{text-align:left;font-weight:600;color:var(--muted);font-size:.8rem;padding:6px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
 table.data td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
 table.data td.num,table.data th.num{text-align:right;white-space:nowrap}
+/* the amount stays on one line; its explanatory sub-line wraps, so the numeric columns fit */
+table.data td.amt small{white-space:normal;display:inline-block;min-width:144px}
 table.data tr.click{cursor:pointer}
 table.data tr.click:hover td{background:var(--sunk)}
 table.data tfoot td{font-weight:700;border-bottom:none}
 .neg{color:var(--bad)} .warnc{color:var(--warn)} .muted{color:var(--muted)}
 .sw{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:8px;vertical-align:-1px}
 .chip{display:inline-flex;align-items:center;gap:5px;font-size:.78rem;border:1px solid var(--line);border-radius:20px;padding:1px 8px 1px 6px;margin:0 4px 3px 0;white-space:nowrap}
-.chip i{width:8px;height:8px;border-radius:50%}
+.chip i{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
+/* a long grant name shortens rather than forcing the column wider; the chip's title has it in full */
+.chip .cn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;max-width:190px}
 .tag{font-size:.74rem;border-radius:4px;padding:1px 6px;background:var(--sunk);color:var(--muted);white-space:nowrap}
 .tag.pending{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
 
@@ -1325,29 +1329,44 @@ function statusTag(e) {
 }
 function costsView(P) {
   const shown = P.rows.filter(r => costFilter === "all" || costStatus(r.ex) === costFilter).sort((x, y) => costOrder(x.ex, y.ex));
+  // Spending before the projection start, reconstructed from the plan the same way the chart's past is.
+  const PA = pastRun(P, "all");
+  const spentOf = new Map(P.rows.map((r, ri) => {
+    let dir = 0, idc = 0;
+    const rr = PA.PP ? PA.PP.rows[ri] : null;
+    if (rr) for (let k = 0; k < PA.past && k < PA.PP.N; k++) { const c = rr.cells[k]; if (c) { dir += c.cost; idc += c.idc || 0; } }
+    return [r, {dir, idc}];
+  }));
   const counts = {all:P.rows.length, current:0, past:0, upcoming:0}; P.rows.forEach(r => counts[costStatus(r.ex)]++);
   const rows = shown.map(r => {
     const e = r.ex;
-    const chips = (e.alloc || []).map(a => { const g = gById(a.grantId); return `<span class="chip"><i style="background:${g ? esc(g.color) : "var(--bad)"}"></i>${g ? esc(g.name) : "Removed grant"} ${esc(allocAmt(a, g))}${validM(a.start) || validM(a.end) ? ` <span class="muted">${validM(a.start) ? lbl(toIdx(a.start)) : "…"}–${validM(a.end) ? lbl(toIdx(a.end)) : "…"}</span>` : ""}</span>`; }).join("") || `<span class="muted">Not assigned</span>`;
+    const chips = (e.alloc || []).map(a => {
+      const g = gById(a.grantId), nm = g ? g.name : "Removed grant", amt = allocAmt(a, g);
+      const dates = validM(a.start) || validM(a.end) ? `${validM(a.start) ? lbl(toIdx(a.start)) : "…"}–${validM(a.end) ? lbl(toIdx(a.end)) : "…"}` : "";
+      return `<span class="chip" title="${esc(nm + " " + amt + (dates ? " · " + dates : ""))}"><i style="background:${g ? esc(g.color) : "var(--bad)"}"></i><span class="cn">${esc(nm)} ${esc(amt)}</span>${dates ? ` <span class="muted">${esc(dates)}</span>` : ""}</span>`;
+    }).join("") || `<span class="muted">Not assigned</span>`;
     return `<tr class="click" data-exp="${esc(e.id)}">
       <td>${esc(e.name)} ${statusTag(e)}<br><small class="muted">${e.category === "Personnel" && e.role ? esc(e.role) : esc(e.category || "Other")}${isExempt(e) ? " · excluded from MTDC base" : ""}</small></td>
       <td style="white-space:nowrap">${e.kind === "once" ? (validM(e.start) ? lbl(toIdx(e.start)) : "—") : `${validM(e.start) ? lbl(toIdx(e.start)) : "—"} – ${validM(e.end) ? lbl(toIdx(e.end)) : "—"}`}</td>
-      <td class="num">${amountCell(e)}</td>
+      <td class="num amt">${amountCell(e)}</td>
       <td>${chips}</td>
-      <td class="num">${fmt(r.horizonCost)}${r.idcTot > 0.5 ? `<br><small class="muted">+ ${fmt(r.idcTot)} indirect</small>` : ""}</td>
+      <td class="num ${spentOf.get(r).dir > 0.5 ? "" : "muted"}">${spentOf.get(r).dir > 0.5 ? fmt(spentOf.get(r).dir) : "—"}</td>
+      <td class="num ${r.horizonCost > 0.5 ? "" : "muted"}">${r.horizonCost > 0.5 ? fmt(r.horizonCost) : "—"}</td>
+      <td class="num">${fmt(spentOf.get(r).dir + r.horizonCost)}${spentOf.get(r).idc + r.idcTot > 0.5 ? `<br><small class="muted">+ ${fmt(spentOf.get(r).idc + r.idcTot)} indirect</small>` : ""}</td>
       <td class="num ${r.gap > 0.5 ? "neg" : "muted"}">${r.gap > 0.5 ? fmt(r.gap) : "—"}</td></tr>`;
   }).join("");
-  const tc = shown.reduce((s, r) => s + r.horizonCost, 0), tg = shown.reduce((s, r) => s + r.gap, 0);
+  const te = shown.reduce((s, r) => s + spentOf.get(r).dir, 0), tc = shown.reduce((s, r) => s + r.horizonCost, 0);
+  const tg = shown.reduce((s, r) => s + r.gap, 0);
   const fopts = [["all","All"],["current","Current"],["past","Past"],["upcoming","Upcoming"]];
   return `${mapView(P, "costs")}
   <section class="panel">
     <div class="row"><div><h2>Costs</h2><p class="hint" style="margin:0">People, supplies, equipment and anything else you plan to pay for, listed by role from most senior, with anything finished at the bottom. Click a row to edit or reassign it.</p></div><span class="spacer"></span><span class="seg" role="group" aria-label="Show">${fopts.map(([v, t]) => `<button data-cf="${v}" aria-pressed="${v === costFilter}">${t} <span class="muted">${counts[v]}</span></button>`).join("")}</span><button class="btn primary" id="cAdd">Add cost</button></div>
     <div class="tbl-wrap" style="margin-top:12px"><table class="data">
-      <thead><tr><th>Cost</th><th>When</th><th class="num">Amount</th><th>Paid by</th><th class="num">Total in projection</th><th class="num">No source</th></tr></thead>
-      <tbody>${rows || `<tr><td colspan="6" class="muted">${P.rows.length ? "No costs match this filter." : "No costs yet. Add salaries, stipends, supplies or equipment."}</td></tr>`}</tbody>
-      ${rows ? `<tfoot><tr><td colspan="4">Total</td><td class="num">${fmt(tc)}</td><td class="num ${tg > 0.5 ? "neg" : ""}">${tg > 0.5 ? fmt(tg) : "—"}</td></tr></tfoot>` : ""}
+      <thead><tr><th>Cost</th><th>When</th><th class="num">Amount</th><th>Paid by</th><th class="num">Expended</th><th class="num">Projected</th><th class="num">Total cost</th><th class="num">No source</th></tr></thead>
+      <tbody>${rows || `<tr><td colspan="8" class="muted">${P.rows.length ? "No costs match this filter." : "No costs yet. Add salaries, stipends, supplies or equipment."}</td></tr>`}</tbody>
+      ${rows ? `<tfoot><tr><td colspan="4">Total</td><td class="num">${fmt(te)}</td><td class="num">${fmt(tc)}</td><td class="num">${fmt(te + tc)}</td><td class="num ${tg > 0.5 ? "neg" : ""}">${tg > 0.5 ? fmt(tg) : "—"}</td></tr></tfoot>` : ""}
     </table></div>
-    <p class="hint" style="margin-top:10px">Totals are direct costs, including fringe and annual raises; indirect costs are shown underneath. Raises are counted from each cost’s start date; totals cover the projection window. Current, past and upcoming are judged against today’s date.</p>
+    <p class="hint" style="margin-top:10px">Figures are direct costs, including fringe and annual raises; indirect is shown under the total. <b>Expended</b> is the months before the projection start, worked back from each cost’s dates and funding split rather than from recorded spending, and reaches at most ten years back. <b>Projected</b> is the projection window, so a cost running past its end is counted only up to it. Raises are counted from each cost’s start date. Current, past and upcoming are judged against today’s date.</p>
   </section>`;
 }
 
