@@ -1065,6 +1065,8 @@ function mapView(P, part = "all") {
     return best ? gById(best) || null : null;
   };
   const keys = P.rows.map((r, ri) => {
+    // People who have left go to their own group, whatever the rows are grouped by.
+    if (r.ex.category === "Personnel" && costStatus(r.ex) === "past") return PAST_GRP;
     if (mapGroup === "category") return r.ex.category || "Other";
     if (mapGroup === "role") return r.ex.category === "Personnel" ? (r.ex.role || "Personnel — no role set") : (r.ex.category || "Other");
     const g = primary(ri);
@@ -1078,12 +1080,14 @@ function mapView(P, part = "all") {
     cats.sort((a, b) => rank(a) - rank(b));
   }
   if (mapGroup === "source") { const gi = n => { const i = state.grants.findIndex(g => g.name === n); return i < 0 ? 999 : i; }; cats.sort((a, b) => gi(a) - gi(b)); }
+  if (cats.includes(PAST_GRP)) cats = cats.filter(c => c !== PAST_GRP).concat([PAST_GRP]); // always last
   for (const cat of (part === "grants" ? [] : cats)) {
-    const head = mapGroup === "category" || mapGroup === "role" || cat === "No funding source" ? cat : "Paid mainly by " + cat;
+    const head = mapGroup === "category" || mapGroup === "role" || cat === "No funding source" || cat === PAST_GRP ? cat : "Paid mainly by " + cat;
     const ck = "c:" + mapGroup + ":" + cat;
-    body += grpRow(ck, head, keys.filter(k => k === cat).length);
-    P.rows.forEach((r, ri) => {
-      if (keys[ri] !== cat) return;
+    const idxs = P.rows.map((_, i) => i).filter(i => keys[i] === cat).sort((a, b) => costOrder(P.rows[a].ex, P.rows[b].ex));
+    body += grpRow(ck, head, idxs.length);
+    idxs.forEach(ri => {
+      const r = P.rows[ri];
       body += `<tr class="exp" data-exp="${esc(r.ex.id)}" ${inAttr([ck])}><td class="lab" title="${esc(r.ex.name)}">${esc(r.ex.name)}</td>`;
       for (let j = 0; j < T; j++) {
         const {X, k, mi, old} = col(j), c = X.rows[ri].cells[k];
@@ -1287,6 +1291,7 @@ function amountCell(e) {
   return `${fmt(cur)}<br><small class="muted">${sub}</small>`;
 }
 const ROLES = ["Research Staff","Associate Research Scholar","Postdoc","Graduate Student","Undergraduate","Other"];
+const PAST_GRP = "Past members";
 const OTHER_CATS = ["Supplies","Equipment","Services","Travel","Publication","Tuition","Subaward","Other"];
 // Sort key for the Costs list: people before other costs, most senior role first, then the
 // remaining categories in their usual order.
